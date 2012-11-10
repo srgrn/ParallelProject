@@ -9,8 +9,10 @@ class PointWithTime :
 {
 public:
 	PointWithTime(void);
-	PointWithTime(int x,int y,char* strtime);
+	PointWithTime(double x,double y,char* strtime);
+	int timeToInt();
 	~PointWithTime(void);
 	tm ptime; 
+	int timeInt;
 };
 

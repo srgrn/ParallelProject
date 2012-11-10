@@ -3,9 +3,9 @@ class PointXY
 {
 public:
 	PointXY(void);
-	PointXY(int x,int y);
+	PointXY(double x,double y);
 	~PointXY(void);
-	int x;
-	int y;
+	double x;
+	double y;
 };
 

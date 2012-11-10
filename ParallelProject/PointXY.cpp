@@ -2,9 +2,11 @@
 
 PointXY::PointXY(void)
 {
+	x=-1;
+	y=-1;
 }
 
-PointXY::PointXY(int x,int y)
+PointXY::PointXY(double x,double y)
 {
 	this->x = x;
 	this->y = y;

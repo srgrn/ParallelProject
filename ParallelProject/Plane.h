@@ -17,8 +17,12 @@ public:
 	plane(istream& is);
 	~plane(void);
 	int criticalDegree;
+	PointWithTime location;
+	PointXY direction;
+	double flightSpeed;
+	PointXY calculateDirectionVector();
+	void updateLocation(int interval);
 	void print();
-private:
 	int flightNumber;
 	int numOfCheckpoints;
 	vector<PointWithTime> checkpoints;

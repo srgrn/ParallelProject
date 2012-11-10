@@ -38,3 +38,25 @@ void plane::print()
 	}
 	printf("Critical Level: %d, Critical Degree: %d\n", criticalLevel,criticalDegree);
 }
+
+PointXY plane::calculateDirectionVector()
+{
+	double vecX = checkpoints.front().x - location.x;
+	double vecY = checkpoints.front().y - location.y;
+	int seconds = checkpoints.front().timeInt - location.timeInt;
+	PointXY p(vecX,vecY);
+	double lengthX = sqrt(vecX*vecX);
+	double lengthY = sqrt(vecY*vecY);
+	double length = sqrt(vecX*vecX + vecY*vecY);
+	p.x = (p.x/length)*(lengthX/(double)seconds);
+	
+	p.y = p.y/length*(lengthY/(double)seconds);
+	
+	return p;
+}
+void plane::updateLocation(int interval)
+{
+	location.timeInt += interval;
+	location.x += direction.x*interval;
+	location.y += direction.y*interval;
+}
