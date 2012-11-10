@@ -1,4 +1,8 @@
+/*
+Simple class to build Point object that will hold a point in space
+*/
 #pragma once
+
 class PointXY
 {
 public:

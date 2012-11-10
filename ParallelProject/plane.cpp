@@ -15,14 +15,14 @@ plane::plane(istream& is)
 	criticalLevel = 0;
 	for(int i=0;i<numOfCheckpoints;i++)
 	{
-		is.get(str,50,' ');
+		is.get(str,50,' '); // get the x value
 		int x = atoi(str);
-		is.get();
-		is.get(str,50,' ');
+		is.get(); // get the space after the x value
+		is.get(str,50,' '); // get the Y value
 		int y = atoi(str);
-		is.getline(str,50);
+		is.getline(str,50); // get the rest of the line (only the timestamp left including the newline
 		PointWithTime temp(x,y,str);
-		checkpoints.push_back(temp);
+		checkpoints.push_back(temp); // enter new checkpoint into plane
 	}
 }
 
@@ -43,14 +43,13 @@ PointXY plane::calculateDirectionVector()
 {
 	double vecX = checkpoints.front().x - location.x;
 	double vecY = checkpoints.front().y - location.y;
-	int seconds = checkpoints.front().timeInt - location.timeInt;
+	int seconds = checkpoints.front().timeInt - location.timeInt; // time to go between the first and second checkpoints
 	PointXY p(vecX,vecY);
-	double lengthX = sqrt(vecX*vecX);
+	double lengthX = sqrt(vecX*vecX); // required for setting the speed
 	double lengthY = sqrt(vecY*vecY);
 	double length = sqrt(vecX*vecX + vecY*vecY);
-	p.x = (p.x/length)*(lengthX/(double)seconds);
-	
-	p.y = p.y/length*(lengthY/(double)seconds);
+	p.x = (p.x/length)*(lengthX/(double)seconds); // calculating the direction + speed on x
+	p.y = p.y/length*(lengthY/(double)seconds); // calculationg the direction + speed on y
 	
 	return p;
 }

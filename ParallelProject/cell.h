@@ -7,10 +7,10 @@ class cell
 public:
 	cell(int x,int y,int len,int wid);
 	~cell(void);
-	bool isInCell(PointXY pt);
+	bool isInCell(PointXY pt); //check if a point is in the cell
 private:
-	PointXY coord;
-	int length;
-	int width;
+	PointXY coord; //top left corner of the cell
+	int length; // on x
+	int width; // on y
 };
 
