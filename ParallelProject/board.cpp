@@ -19,6 +19,19 @@ board::board(int length,int width,int numOfCellsH,int numOfSCellsV,int interval)
 	}
 }
 
+vector<cell> board::betweenTwoPoints(PointXY a, PointXY b)
+{
+	vector<cell> ret;
+	double m = (b.y - a.y)/(b.x-a.x);
+	double n = b.y-m*b.x;
+	int firstcellx = a.x/cells_h;
+	int firstcelly = a.y/cells_v;
+	ret.push_back(matrix[firstcellx][firstcelly]);
+	int lastcellx = b.x/cells_h;
+	int lastcelly = b.y/cells_v;
+	ret.push_back(matrix[lastcellx][lastcelly]);
+	return ret;
+}
 
 board::~board(void)
 {

@@ -13,12 +13,16 @@ int main(int argc, char* argv[]) {
 	
 	helpers h;
 	fstream stream = h.openFile(argv[1]);
-	board b = h.readHeader(stream);
+	board brd = h.readHeader(stream);
 	vector<plane> planes;
 	while(stream.good())
 	{	 
 		planes.push_back(*(new plane(stream)));
 	}
+	PointXY a(50,50);
+	PointXY b(150,50);
+	brd.betweenTwoPoints(a,b);
+	return 0;
 	for(int i=0;i<86400;i+=1) //main loop check at interval
 	{
 		for(vector<plane>::iterator iter=planes.begin();iter != planes.end();iter++) // foreach plane loop (should be parallelzyed
@@ -31,7 +35,7 @@ int main(int argc, char* argv[]) {
 					
 					iter->location = *(cpi);
 					vector<PointWithTime>::iterator afterErase = iter->checkpoints.erase(cpi);
-					if(afterErase != iter->checkpoints.end())
+					if(afterErase != iter->checkpoints.end()) // if no more points for this plane
 					{
 						cout << iter->flightNumber << " starts at " << i << endl;
 						iter->direction = iter->calculateDirectionVector();
@@ -40,8 +44,8 @@ int main(int argc, char* argv[]) {
 					{
 						//cout << iter->flightNumber << " finished at " << i << " ";
 						cout << i << " " << iter->flightNumber << " " << iter->location.x << "," << iter->location.y << endl;
-						iter->direction.x = -1;
-						iter->direction.y = -1;
+						iter->direction.x = -1; // reset direction vector
+						iter->direction.y = -1; // reset direction vector
 					}
 					
 				}

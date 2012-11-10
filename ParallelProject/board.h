@@ -12,7 +12,7 @@ public:
 	~board(void);
 	int sampleInterval;
 	vector<vector<cell>> matrix;
-
+	vector<cell> betweenTwoPoints(PointXY a, PointXY b);
 private:
 	int cells_h;
 	int cells_v;
