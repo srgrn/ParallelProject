@@ -19,7 +19,10 @@ int main(int argc, char* argv[]) {
 	{	 
 		planes.push_back(*(new plane(stream)));
 	}
-	
+	for(vector<plane>::iterator it = planes.begin();it != planes.end();it++)
+	{
+		it->print();
+	}
 	
 	return 0;
 }

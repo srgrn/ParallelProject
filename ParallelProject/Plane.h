@@ -6,7 +6,7 @@
 #include <vector>
 #include <ctime>
 
-#include "PointXY.h"
+#include "PointWithTime.h"
 
 using namespace std;
 
@@ -17,10 +17,11 @@ public:
 	plane(istream& is);
 	~plane(void);
 	int criticalDegree;
+	void print();
 private:
 	int flightNumber;
 	int numOfCheckpoints;
-	vector<PointXY> checkpoints;
+	vector<PointWithTime> checkpoints;
 	int criticalLevel;
 
 };

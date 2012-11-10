@@ -80,6 +80,7 @@
     <ClCompile Include="helpers.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="plane.cpp" />
+    <ClCompile Include="PointWithTime.cpp" />
     <ClCompile Include="PointXY.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -90,6 +91,7 @@
     <ClInclude Include="cell.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="plane.h" />
+    <ClInclude Include="PointWithTime.h" />
     <ClInclude Include="PointXY.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
