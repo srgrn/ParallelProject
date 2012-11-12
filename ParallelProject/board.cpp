@@ -26,10 +26,25 @@ vector<cell> board::betweenTwoPoints(PointXY a, PointXY b)
 	double n = b.y-m*b.x;
 	int firstcellx = a.x/cells_h;
 	int firstcelly = a.y/cells_v;
+	
 	ret.push_back(matrix[firstcellx][firstcelly]);
 	int lastcellx = b.x/cells_h;
 	int lastcelly = b.y/cells_v;
 	ret.push_back(matrix[lastcellx][lastcelly]);
+	
+	PointXY t = a;
+	double k = sqrt((double)(cells_h*cells_h) + (double)(cells_v*cells_v)); 
+
+	while (t.x <= b.x)
+	{
+		int cellx = t.x/cells_h;
+		int celly = t.y/cells_v;
+		ret.push_back(matrix[cellx][celly]);
+		t.x+=k;
+		t.y = m*(t.x)+n;
+		
+	}
+	
 	return ret;
 }
 

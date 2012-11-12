@@ -59,3 +59,40 @@ void plane::updateLocation(int interval)
 	location.x += direction.x*interval;
 	location.y += direction.y*interval;
 }
+
+void plane::step(int time, int interval)
+{
+	if(checkpoints.size() > 0)
+			{
+				vector<PointWithTime>::iterator cpi = checkpoints.begin();
+				if(cpi->timeInt == time)
+				{
+					
+					location = *(cpi);
+					vector<PointWithTime>::iterator afterErase = checkpoints.erase(cpi);
+					if(afterErase != checkpoints.end()) // if no more points for this plane
+					{
+						cout << flightNumber << " starts at " << time << endl;
+						direction = calculateDirectionVector();
+					}
+					else
+					{
+						cout << flightNumber << " finished at " << time << " ";
+						cout << time << " " << flightNumber << " " << location.x << "," << location.y << endl;
+						direction.x = -1; // reset direction vector
+						direction.y = -1; // reset direction vector
+					}
+					
+				}
+				else
+				{
+					if(direction.x != -1)
+					{
+
+						updateLocation(interval); //TODO change to be interval from data file which have been lost somewhere.
+						//cout << i << " " << iter->flightNumber << " " << iter->location.x << "," << iter->location.y << endl;
+					}
+				}
+	}
+
+}
