@@ -34,16 +34,15 @@ vector<cell> board::betweenTwoPoints(PointXY a, PointXY b)
 		PointXY temp = t.coord;
 		if(xdiff > 0)
 		{
-		
 			if(ydiff==0 && t.coord.x >= end.coord.x)
 			{
-				t.coord.x -= cells_h;
-				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+				temp.x -= cells_h;
+				//ret.push_back(matrix[(int)(temp.x/cells_h)][(int)(t.coord.y/cells_v)]);
 			}
 			else if(checkGridLineY(m,n,t.coord.x,t.coord.y,t.coord.y+cells_v))
 			{
-				t.coord.x -= cells_h;
-				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+				temp.x -= cells_h;
+				ret.push_back(matrix[(int)(temp.x/cells_h)][(int)(t.coord.y/cells_v)]);
 			}
 
 		}
@@ -51,42 +50,49 @@ vector<cell> board::betweenTwoPoints(PointXY a, PointXY b)
 		{
 			if(ydiff==0 && t.coord.x <= end.coord.x)
 			{			
-				t.coord.x += cells_h;
-				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+				temp.x += cells_h;
+				//ret.push_back(matrix[(int)(temp.x/cells_h)][(int)(t.coord.y/cells_v)]);
 			}
 			else if(checkGridLineY(m,n,t.coord.x+cells_h,t.coord.y,t.coord.y+cells_v))
 			{
-				t.coord.x += cells_h;
-				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+				temp.x += cells_h;
+				ret.push_back(matrix[(int)(temp.x/cells_h)][(int)(t.coord.y/cells_v)]);
 			}
 		}
 		if(ydiff > 0)
 		{
 			if(xdiff==0 && t.coord.y > end.coord.y)
 			{
-				t.coord.y -= cells_v;
-				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+				temp.y -= cells_v;
+				//ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(temp.y/cells_v)]);
 			}
 			else if(checkGridLineX(m,n,t.coord.y,t.coord.x,t.coord.x+cells_h))
 			{
-				t.coord.y -= cells_v;
-				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+				temp.y -= cells_v;
+				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(temp.y/cells_v)]);
 			}
 		}
 		else if(ydiff <0)
 		{
 			if(xdiff==0 && t.coord.y < end.coord.y)
 			{
-				t.coord.y += cells_v;
-				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+				temp.y += cells_v;
+				//ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(temp.y/cells_v)]);
 			}
 			else if(checkGridLineX(m,n,t.coord.y+cells_v,t.coord.x,t.coord.x+cells_h))
 			{
-				t.coord.y += cells_v;
-				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+				temp.y += cells_v;
+				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(temp.y/cells_v)]);
 			}
 		}
+		t.coord.x = temp.x;
+		t.coord.y = temp.y;
+		if(ret.back().coord.x != t.coord.x || ret.back().coord.y != t.coord.y)
+		{
+			ret.push_back(t);	
+		}
 	} while (t.coord.x != end.coord.x || t.coord.y != end.coord.y);
+	
 	return ret;
 }
 
