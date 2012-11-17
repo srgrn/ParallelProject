@@ -22,6 +22,10 @@ bool cell::isInCell(PointXY pt)
 	return false;
 }
 
+void cell::print()
+{
+	cout <<"Cell (top,left)=(" << coord.x << "," << coord.y << ")" << endl;
+}
 cell::~cell(void)
 {
 }

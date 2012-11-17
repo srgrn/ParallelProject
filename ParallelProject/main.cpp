@@ -1,6 +1,4 @@
 
-
-
 #include "helpers.h"
 #include "Plane.h"
 
@@ -20,8 +18,12 @@ int main(int argc, char* argv[]) {
 		planes.push_back(*(new plane(stream)));
 	}
 	PointXY a(50,50);
-	PointXY b(250,150);
-	brd.betweenTwoPoints(a,b);
+	PointXY b(50,250);
+	vector<cell> occupiedCells = brd.betweenTwoPoints(a,b);
+	for(vector<cell>::iterator it = occupiedCells.begin(); it != occupiedCells.end(); it++)
+	{
+		it->print();
+	}
 	return 0;
 	for(int i=0;i<86400;i+=brd.sampleInterval) //main loop check at interval
 	{

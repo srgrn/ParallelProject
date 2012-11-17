@@ -15,7 +15,5 @@ public:
 	~helpers(void);
 	board readHeader(istream& is);
 	fstream openFile(char *filename);
-	bool checkGridLineX(double m,double n,int y,int start,int end);
-	bool checkGridLineY(double m,double n,int x,int start,int end);
 };
 

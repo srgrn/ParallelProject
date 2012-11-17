@@ -30,21 +30,3 @@ fstream helpers::openFile(char *filename)
 	inputfile.open(filename,ios::in);
 	return inputfile;
 }
-bool helpers::checkGridLineX(double m,double n,int y,int start,int end)
-{
-	double temp = (y-n)/m;
-	if(temp>=start && temp<=end)
-	{
-		return true;
-	}
-	return false;
-}
-bool helpers::checkGridLineY(double m,double n,int x,int start,int end)
-{
-	double temp = m*x+n;
-	if(temp>=start && temp<=end)
-	{
-		return true;
-	}
-	return false;
-}
