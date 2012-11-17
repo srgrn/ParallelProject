@@ -22,60 +22,71 @@ board::board(int length,int width,int numOfCellsH,int numOfSCellsV,int interval)
 vector<cell> board::betweenTwoPoints(PointXY a, PointXY b)
 {
 	vector<cell> ret;
-	
-	double temp = (b.x-a.x);
-	double m = (b.y - a.y)/temp;
-	double n = b.y-m*b.x;
-	if(temp == 0)
+	cell t = matrix[(int)(a.x/cells_h)][(int)(a.y/cells_v)];
+	double xdiff = a.x- b.x;
+	double ydiff = a.y- b.y;
+	double m = (a.y-b.y)/(a.x-b.x);// the curve?
+	double n = b.y-m*b.x;// from y=mx+n
+	ret.push_back(t);
+	cell end = matrix[(int)(b.x/cells_h)][(int)(b.y/cells_v)];
+	do
 	{
-		m=0;
-	}
-	
-	int firstcellx = a.x/cells_h;
-	int firstcelly = a.y/cells_v;
-	ret.push_back(matrix[firstcellx][firstcelly]);
-	
-	int lastcellx = b.x/cells_h;
-	int lastcelly = b.y/cells_v;
-	//ret.push_back(matrix[lastcellx][lastcelly]);
-	double xdiff = b.x -a.x;
-	double ydiff = b.y -a.y;
-	
-	cell t(firstcellx*cells_h,firstcelly*cells_v,cells_h,cells_v);
-	while (t.coord.x != lastcellx*cells_h || t.coord.y != lastcelly*cells_v)
-	{
-		PointXY nextCell = t.coord;
-		bool testx = false;
-		bool testy = false;
-			// deciding on which sides of the cell to test default values are top and right sides
-		if(xdiff > 0) // test left side
+		PointXY temp = t.coord;
+		if(xdiff > 0)
 		{
-			nextCell.x += cells_h;
-			testx = checkGridLineY(m,n,nextCell.x,t.coord.y,t.coord.y+cells_v);
-		}
-		if(ydiff > 0) // test bottom side
-		{
-			nextCell.y += cells_v;
-			testy = checkGridLineX(m,n,nextCell.y,t.coord.x,t.coord.x+cells_h);
-		}
-				 
-		if(testx)
-		{
-			ret.push_back(matrix[(int)(nextCell.x/cells_h)][(int)(t.coord.y/cells_v)]);
-		}
-		if(testy)
-		{
-			ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(nextCell.y/cells_v)]);
-		}
-		if(testx && testy)
-		{
-			ret.push_back(matrix[(int)(nextCell.x/cells_h)][(int)(nextCell.y/cells_v)]);
-		}
-		t.coord.x = nextCell.x;
-		t.coord.y = nextCell.y;
+		
+			if(ydiff==0 && t.coord.x >= end.coord.x)
+			{
+				t.coord.x -= cells_h;
+				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+			}
+			else if(checkGridLineY(m,n,t.coord.x,t.coord.y,t.coord.y+cells_v))
+			{
+				t.coord.x -= cells_h;
+				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+			}
 
-	}
-	
+		}
+		else if(xdiff <0)
+		{
+			if(ydiff==0 && t.coord.x <= end.coord.x)
+			{			
+				t.coord.x += cells_h;
+				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+			}
+			else if(checkGridLineY(m,n,t.coord.x+cells_h,t.coord.y,t.coord.y+cells_v))
+			{
+				t.coord.x += cells_h;
+				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+			}
+		}
+		if(ydiff > 0)
+		{
+			if(xdiff==0 && t.coord.y > end.coord.y)
+			{
+				t.coord.y -= cells_v;
+				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+			}
+			else if(checkGridLineX(m,n,t.coord.y,t.coord.x,t.coord.x+cells_h))
+			{
+				t.coord.y -= cells_v;
+				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+			}
+		}
+		else if(ydiff <0)
+		{
+			if(xdiff==0 && t.coord.y < end.coord.y)
+			{
+				t.coord.y += cells_v;
+				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+			}
+			else if(checkGridLineX(m,n,t.coord.y+cells_v,t.coord.x,t.coord.x+cells_h))
+			{
+				t.coord.y += cells_v;
+				ret.push_back(matrix[(int)(t.coord.x/cells_h)][(int)(t.coord.y/cells_v)]);
+			}
+		}
+	} while (t.coord.x != end.coord.x || t.coord.y != end.coord.y);
 	return ret;
 }
 

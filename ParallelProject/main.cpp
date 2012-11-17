@@ -17,8 +17,8 @@ int main(int argc, char* argv[]) {
 	{	 
 		planes.push_back(*(new plane(stream)));
 	}
-	PointXY a(50,50);
-	PointXY b(50,250);
+	PointXY a(150,150);
+	PointXY b(50,50);
 	vector<cell> occupiedCells = brd.betweenTwoPoints(a,b);
 	for(vector<cell>::iterator it = occupiedCells.begin(); it != occupiedCells.end(); it++)
 	{
