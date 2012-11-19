@@ -17,10 +17,10 @@ public:
 	int sampleInterval; // the lost samle interval
 	vector<vector<cell>> matrix; // proably unneded
 	vector<cell> betweenTwoPoints(PointXY a, PointXY b);
-private:
 	int cells_h; // x length of cells
 	int cells_v; // y length of cells 
 	bool checkGridLineX(double m,double n,int y,int start,int end);
 	bool checkGridLineY(double m,double n,int x,int start,int end);
+	void setDirtyCell(PointXY point,bool clean);
 };
 

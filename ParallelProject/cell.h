@@ -16,6 +16,9 @@ public:
 	PointXY coord; //top left corner of the cell
 	int length; // on x
 	int width; // on y
+	int dirty_bit;
+	void clean();
+	void dirty();
 	void print();
 };
 

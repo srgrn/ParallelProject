@@ -77,8 +77,10 @@
   <ItemGroup>
     <ClCompile Include="board.cpp" />
     <ClCompile Include="cell.cpp" />
+    <ClCompile Include="CriticalPath.cpp" />
     <ClCompile Include="helpers.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="OrderedSet.cpp" />
     <ClCompile Include="plane.cpp" />
     <ClCompile Include="PointWithTime.cpp" />
     <ClCompile Include="PointXY.cpp" />
@@ -89,7 +91,9 @@
   <ItemGroup>
     <ClInclude Include="board.h" />
     <ClInclude Include="cell.h" />
+    <ClInclude Include="CriticalPath.h" />
     <ClInclude Include="helpers.h" />
+    <ClInclude Include="OrderedSet.h" />
     <ClInclude Include="plane.h" />
     <ClInclude Include="PointWithTime.h" />
     <ClInclude Include="PointXY.h" />

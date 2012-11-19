@@ -1,7 +1,7 @@
 
 #include "helpers.h"
 #include "Plane.h"
-
+#include "CriticalPath.h"
 using namespace std;
 
 
@@ -17,20 +17,16 @@ int main(int argc, char* argv[]) {
 	{	 
 		planes.push_back(*(new plane(stream)));
 	}
-	PointXY a(150,150);
-	PointXY b(50,50);
-	vector<cell> occupiedCells = brd.betweenTwoPoints(a,b);
-	for(vector<cell>::iterator it = occupiedCells.begin(); it != occupiedCells.end(); it++)
-	{
-		it->print();
-	}
-	return 0;
 	for(int i=0;i<86400;i+=brd.sampleInterval) //main loop check at interval
 	{
 		for(vector<plane>::iterator iter=planes.begin();iter != planes.end();iter++) // foreach plane loop (should be parallelzyed
 		{
+			brd.setDirtyCell(iter->location,true);
 			iter->step(i,brd.sampleInterval);
+			brd.setDirtyCell(iter->location,false);
 		}
+		vector<CriticalPath> critic;
+		//CriticalPath trek(planes[0].location,planes[2].location,brd.betweenTwoPoints(planes.front().location,planes[2].location));
 	}
 	return 0;
 }

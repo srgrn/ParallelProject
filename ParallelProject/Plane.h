@@ -20,6 +20,7 @@ public:
 	plane(istream& is); // constractur from file.
 	~plane(void);
 	int criticalDegree;
+	int MaxCriticalDegree;
 	PointWithTime location; // current location of plane after takeoff
 	PointXY direction; // vector of movement (not a real vector since it is already multiplied by speed
 	PointXY calculateDirectionVector(); // for calculating the speed and direction

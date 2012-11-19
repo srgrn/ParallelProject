@@ -70,6 +70,8 @@ void plane::step(int time, int interval)
 					
 					location = *(cpi);
 					vector<PointWithTime>::iterator afterErase = checkpoints.erase(cpi);
+					criticalLevel += criticalDegree;
+					criticalDegree = 0;
 					if(afterErase != checkpoints.end()) // if no more points for this plane
 					{
 						cout << flightNumber << " starts at " << time << endl;

@@ -114,7 +114,17 @@ bool board::checkGridLineY(double m,double n,int x,int start,int end)
 	}
 	return false;
 }
-
+void board::setDirtyCell(PointXY point,bool clean)
+{
+	if(clean)
+	{
+	matrix[(int)(point.x/cells_h)][(int)(point.y/cells_v)].clean();
+	}
+	else
+	{
+		matrix[(int)(point.x/cells_h)][(int)(point.y/cells_v)].dirty();
+	}
+}
 board::~board(void)
 {
 }
