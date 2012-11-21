@@ -19,6 +19,30 @@ board::board(int length,int width,int numOfCellsH,int numOfSCellsV,int interval)
 	}
 }
 
+board::board(istream& is)
+{
+	char str[50];
+	vector<int> params;
+	while(is.good() && params.size()<=4)
+	{	 
+		is.getline(str,50);
+		params.push_back(atoi(str));
+	}
+	cells_h = params[0] / params[2];
+	cells_v = params[1] / params[3];
+	sampleInterval = params[4];
+	
+	for(int i=0;i<params[2];i++)
+	{
+		vector<cell> temp;
+		for(int j=0;j<params[3];j++)
+		{
+			cell c(i*cells_h,j*cells_v,cells_v,cells_h);
+			temp.push_back(c);
+		}
+		matrix.push_back(temp);
+	}
+}
 vector<cell> board::betweenTwoPoints(PointXY a, PointXY b)
 {
 	vector<cell> ret;

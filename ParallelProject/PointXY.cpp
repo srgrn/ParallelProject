@@ -16,3 +16,11 @@ PointXY::PointXY(double x,double y)
 PointXY::~PointXY(void)
 {
 }
+PointXY PointXY::operator+( const PointXY& other ) const
+{
+	return PointXY(x+other.x,y+other.y);
+}
+PointXY PointXY::operator+( const double& other ) const
+{
+	return PointXY(x+other,y+other);
+}

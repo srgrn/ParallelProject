@@ -98,3 +98,38 @@ void plane::step(int time, int interval)
 	}
 
 }
+
+bool plane::operator>(const plane& other) const
+{
+	if(flightNumber > other.flightNumber)
+		return true;
+	return false;
+}
+
+bool plane::operator<(const plane& other) const
+{
+	if(flightNumber < other.flightNumber)
+		return true;
+	return false;
+}
+
+bool plane::operator==(const plane& other) const
+{
+	if(flightNumber == other.flightNumber)
+		return true;
+	return false;
+}
+
+bool plane::operator>=(const plane& other) const
+{
+	if(flightNumber > other.flightNumber || flightNumber== other.flightNumber)
+		return true;
+	return false;
+}
+
+bool plane::operator<=(const plane& other) const
+{
+		if(flightNumber < other.flightNumber || flightNumber== other.flightNumber)
+		return true;
+	return false;
+}

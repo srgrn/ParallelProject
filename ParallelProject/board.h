@@ -13,6 +13,7 @@ class board
 {
 public:
 	board(int length,int width,int numOfCellsH,int numOfSCellsV,int interval);
+	board(istream& is);
 	~board(void);
 	int sampleInterval; // the lost samle interval
 	vector<vector<cell>> matrix; // proably unneded

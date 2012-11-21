@@ -31,6 +31,12 @@ public:
 	int numOfCheckpoints; // number of points in the plane track can be removed and use the vector.size instead.
 	vector<PointWithTime> checkpoints; // the list of the points 
 	int criticalLevel;
-
+	
+	// operators
+	bool plane::operator>(const plane& other) const;
+	bool plane::operator<(const plane& other) const;
+	bool plane::operator==(const plane& other) const;
+	bool plane::operator>=(const plane& other) const;
+	bool plane::operator<=(const plane& other) const;
 };
 
