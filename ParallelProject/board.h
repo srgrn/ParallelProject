@@ -6,6 +6,8 @@ currently takes long to build since it creates so many cells.
 #pragma once
 #include <vector>
 
+#include "Plane.h"
+#include "OrderedSet.h"
 #include "cell.h"
 using namespace std;
 
@@ -23,5 +25,6 @@ public:
 	bool checkGridLineX(double m,double n,int y,int start,int end);
 	bool checkGridLineY(double m,double n,int x,int start,int end);
 	void setDirtyCell(PointXY point,bool clean);
+	void setPairs(vector<plane>* vec,OrderedSet *arr);
 };
 

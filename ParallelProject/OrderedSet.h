@@ -9,12 +9,13 @@ class OrderedSet
 {
 public:
 	//OrderedSet(int a, int b);
+	OrderedSet();
 	OrderedSet(plane* a, plane* b);
 	~OrderedSet(void);
-	//int first;
-	//int second;
-	plane* first;
-	plane* second;
+	plane* first();
+	plane* second();
+	void first(plane *ptr);
+	void second(plane *ptr);
 	// >
 	bool operator>(const OrderedSet& other) const;
 	// == 
@@ -29,6 +30,10 @@ public:
 	// + becouse i don;t remeber how it is being done
 	//OrderedSet operator+( const OrderedSet& other ) const;
 	//OrderedSet operator+( const int& other ) const;
-
+private:
+	//int first;
+	//int second;
+	plane* m_first;
+	plane* m_second;
 };
 

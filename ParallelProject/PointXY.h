@@ -13,5 +13,6 @@ public:
 	double y;
 	PointXY operator+( const PointXY& other ) const;
 	PointXY operator+( const double& other ) const;
+	bool isZero();
 };
 

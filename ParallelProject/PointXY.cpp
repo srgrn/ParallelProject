@@ -24,3 +24,10 @@ PointXY PointXY::operator+( const double& other ) const
 {
 	return PointXY(x+other,y+other);
 }
+
+bool PointXY::isZero()
+{
+	if(x ==0 && y ==0)
+		return true;
+	return false;
+}

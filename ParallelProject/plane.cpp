@@ -81,14 +81,14 @@ void plane::step(int time, int interval)
 					{
 						cout << flightNumber << " finished at " << time << " ";
 						cout << time << " " << flightNumber << " " << location.x << "," << location.y << endl;
-						direction.x = -1; // reset direction vector
-						direction.y = -1; // reset direction vector
+						direction.x = 0; // reset direction vector
+						direction.y = 0; // reset direction vector
 					}
 					
 				}
 				else
 				{
-					if(direction.x != -1)
+					if(!direction.isZero())
 					{
 
 						updateLocation(interval); //TODO change to be interval from data file which have been lost somewhere.

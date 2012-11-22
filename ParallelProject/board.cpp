@@ -152,3 +152,17 @@ void board::setDirtyCell(PointXY point,bool clean)
 board::~board(void)
 {
 }
+
+void board::setPairs(vector<plane>* vec,OrderedSet *arr)
+{
+	vector<plane>::iterator front = vec->begin();
+	int counter =0;
+	for(;front<vec->end();front++)
+	{
+		for(vector<plane>::iterator rotate = front;rotate<vec->end();rotate++,counter++)
+		{
+			arr[counter].first(&(*front));
+			arr[counter].second(&(*rotate));
+		}
+	}
+}
