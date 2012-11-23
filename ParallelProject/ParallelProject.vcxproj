@@ -75,28 +75,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="board.cpp" />
-    <ClCompile Include="cell.cpp" />
-    <ClCompile Include="CriticalPath.cpp" />
-    <ClCompile Include="helpers.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="OrderedSet.cpp" />
-    <ClCompile Include="plane.cpp" />
-    <ClCompile Include="PointWithTime.cpp" />
-    <ClCompile Include="PointXY.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\basic1.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="board.h" />
-    <ClInclude Include="cell.h" />
-    <ClInclude Include="CriticalPath.h" />
-    <ClInclude Include="helpers.h" />
-    <ClInclude Include="OrderedSet.h" />
-    <ClInclude Include="plane.h" />
-    <ClInclude Include="PointWithTime.h" />
+    <ClCompile Include="Cell.cpp" />
+    <ClCompile Include="ControlPoint.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Plane.cpp" />
+    <ClCompile Include="PointXY.cpp" />
+    <ClCompile Include="ProjectSpace.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Cell.h" />
+    <ClInclude Include="ControlPoint.h" />
+    <ClInclude Include="Plane.h" />
     <ClInclude Include="PointXY.h" />
+    <ClInclude Include="ProjectSpace.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
