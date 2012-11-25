@@ -8,6 +8,7 @@ Plane::Plane(void)
 	currentCell = NULL;
 	location.x = -1;
 	location.y = -1;
+	CL = 0;
 }
 
 Plane::Plane(istream& is)
@@ -33,6 +34,8 @@ Plane::Plane(istream& is)
 	currentCell = NULL;
 	location.x = -1;
 	location.y = -1;
+	CL = 0;
+	CD = 0;
 }
 
 Plane::~Plane(void)

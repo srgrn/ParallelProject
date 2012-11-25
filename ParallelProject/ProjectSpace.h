@@ -25,6 +25,8 @@ public:
 	int cell_width;
 	int cell_height;
 	int interval;
+	int numCellsX;
+	int numCellsY;
 	map<PointXY,Cell*> cells;
 };
 

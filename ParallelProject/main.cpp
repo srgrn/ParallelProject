@@ -21,7 +21,7 @@ void main(int argc, char* argv[]) {
 	stream.open(argv[1],ios::in);
 	ProjectSpace space(stream); // read the header of the file # note there are no exception handling.
 	vector<Plane> planes;
-	map<pair<PointXY,PointXY> ,ViewPath*> paths;
+	map<pair<PointXY,PointXY> ,ViewPath> paths;
 	while(stream.good()) // read all planes into memory
 	{	 
 		planes.push_back(*(new Plane(stream)));
@@ -66,9 +66,14 @@ void main(int argc, char* argv[]) {
 		//	ViewPath curr(a,b);
 		//	space.betweenTwoPoints(a,b,&(curr.cells));
 		//	map<pair<PointXY,PointXY>,ViewPath*>::iterator index =paths.insert(pair<pair<PointXY,PointXY>,ViewPath*>(key,&curr)).first;
+		//	ViewPath* ViewPtr = paths.at(key);
+		//	for(vector<Cell*>::iterator testerIT = ViewPtr->cells.begin();testerIT<ViewPtr->cells.end();testerIT++)
+		//	{
+		//		cout << (*testerIT)->isEmpty() <<endl;
+		//	}
 		//	// end of test 
 		//}
-		for(int j=0;j<num_of_planes;j++)
+		for(int j=0;j<pairs_number;j++)
 		{
 			Cell* a = arr[j].first->currentCell;
 			Cell* b = arr[j].second->currentCell;
@@ -83,29 +88,42 @@ void main(int argc, char* argv[]) {
 				key.first = b->TopLeft;
 				key.second = a->TopLeft;
 			} 
-			map<pair<PointXY,PointXY>,ViewPath*>::iterator index = paths.find(key);
+			map<pair<PointXY,PointXY>,ViewPath>::iterator index = paths.find(key);
+			ViewPath* ViewPtr = NULL;
 			if(index == paths.end())
 			{
-				//TODO need to find a way to prevent it from disappering..
-				space.betweenTwoPoints(a,b,&(curr.cells));
-				// Currently it disappears when inserting into the map
-				paths.insert(pair<pair<PointXY,PointXY>,ViewPath*>(key,&curr));
 				
-			}
-			ViewPath* ptr = paths.at(key); // this adds a lot of O into the code 
-			for(vector<Cell*>::iterator testerIT = ptr->cells.begin();testerIT<ptr->cells.end();testerIT++)
-			{
-				if((*testerIT)->contents >0)
+				vector<Cell*> curr;
+				space.betweenTwoPoints(a,b,&curr);
+				ViewPath temp(a,b);
+				if(curr.size() > 0)
 				{
-					arr[j].first->CL++;
-					//arr[j].first->CDObjects.insert
-					arr[j].second->CL++;
-					break;
+				temp.cells.assign(curr.begin(),curr.end());
 				}
+				paths.insert(pair<pair<PointXY,PointXY>,ViewPath>(key,temp));
+				ViewPtr = &paths.at(key); // this adds a lot of O into the code 
 			}
-			
-		}
+			else
+			{
+				ViewPtr = &(index->second); // this adds a lot of O into the code 
+			}
+				for(vector<Cell*>::iterator testerIT = ViewPtr->cells.begin();testerIT<ViewPtr->cells.end();testerIT++)
+				{
+					if(!(*testerIT)->isEmpty())
+					{
+						arr[j].first->CL++;
+						//arr[j].first->CDObjects.insert
+						arr[j].second->CL++;
+						break;
+					}
+				} // end of loop going over cells on path
+		} // end of updating planes CL
 
+	} // end of day look
+	
+	for(vector<Plane>::iterator iter = planes.begin();iter < planes.end();iter++)
+	{
+		cout << iter->flightNumber << ": " << iter->CL << endl;
 	}
 }
 

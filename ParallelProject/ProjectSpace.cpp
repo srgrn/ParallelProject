@@ -9,6 +9,8 @@ ProjectSpace::ProjectSpace(int xsize,int ysize,int numOfCellsX,int numOfSCellsY,
 {
 	cell_width = xsize / numOfCellsX;
 	cell_height = ysize / numOfSCellsY;
+	numCellsX = numOfCellsX; // this is for testing
+	numCellsY = numOfSCellsY; // this is for testing
 	interval = sec;
 }
 
@@ -23,6 +25,8 @@ ProjectSpace::ProjectSpace(istream& is)
 	}
 	cell_width = params[0] / params[2];
 	cell_height = params[1] / params[3];
+	numCellsX = params[2]; // this is for testing
+	numCellsY = params[3]; // this is for testing
 	interval = params[4];
 }
 
@@ -37,21 +41,22 @@ vector<Cell*> ProjectSpace::betweenTwoPoints(PointXY a, PointXY b)
 }
 void ProjectSpace::betweenTwoPoints(Cell* begin,Cell* end,vector<Cell*>* ret)
 {
-	ret->push_back(begin);
+	if(begin == end)
+		return;
 	//Cell t = matrix[(int)(a.x/cells_h)][(int)(a.y/cells_v)];
 	Cell start;
 	//Cell start(begin->TopLeft.x,begin->TopLeft.y,begin->width,begin->height);
 	start.TopLeft = begin->TopLeft;
 	start.width = begin->width; 
 	start.height = begin->height;
-	if(begin == end)
-		return;
+	//ret->push_back(begin); // got tired to think about this i will simply remove this header later.
 	double xdiff = start.center().x- end->center().x;
 	double ydiff = start.center().y- end->center().y;
 	double m = (start.center().y-end->center().y)/(start.center().x-end->center().x);// the curve?
 	double n = end->center().y-m*end->center().x;// from y=mx+n
-	ret->push_back(end);
+	//ret->push_back(end); //got tired to think about this i will simply remove this header later.
 	//Cell end = matrix[(int)(b.x/cells_h)][(int)(b.y/cells_v)];
+	int testcounter = (int)sqrt((double)(numCellsX*numCellsX+numCellsY*numCellsY)) * 2;
 	do
 	{
 		PointXY temp = start.TopLeft;
@@ -114,12 +119,12 @@ void ProjectSpace::betweenTwoPoints(Cell* begin,Cell* end,vector<Cell*>* ret)
 		}
 		start.TopLeft.x = temp.x;
 		start.TopLeft.y = temp.y;
-		if(ret->back()->TopLeft.x != start.TopLeft.x || ret->back()->TopLeft.y != start.TopLeft.y)
+		if(ret->size() != 0 && (ret->back()->TopLeft.x != start.TopLeft.x || ret->back()->TopLeft.y != start.TopLeft.y)) // this will be too complicated
 		{
 			ret->push_back(insertCell(start.TopLeft));	
 		}
-	} while (start.TopLeft.x != end->TopLeft.x || start.TopLeft.y != end->TopLeft.y);
-	
+		testcounter--;
+	} while ((start.TopLeft.x != end->TopLeft.x || start.TopLeft.y != end->TopLeft.y)&& testcounter >0 );
 	return;
 }
 

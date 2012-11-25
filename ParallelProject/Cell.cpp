@@ -2,6 +2,7 @@
 
 Cell::Cell(void)
 {
+	contents = 0;
 }
 Cell::Cell(int x,int y,int xsize,int ysize)
 {
@@ -9,6 +10,7 @@ Cell::Cell(int x,int y,int xsize,int ysize)
 	TopLeft.y = y;
 	width = xsize;
 	height = ysize;
+	contents = 0;
 }
 
 
