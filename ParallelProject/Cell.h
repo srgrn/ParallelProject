@@ -1,6 +1,6 @@
 #pragma once
 #include "PointXY.h"
-#include "Plane.h"
+//#include "Plane.h"
 #include <map>
 using namespace std;
 
@@ -14,9 +14,12 @@ public:
 	int width;
 	int height;
 	PointXY center();
-	map<int,Plane*> contents; 
+	map<int,bool> contents; 
 	bool isEmpty();
-	bool occupy(Plane* ptr);
-	bool leave(Plane* ptr);
+	bool occupy(int id);
+	bool leave(int id);
+	bool inCell(PointXY point);
+
+
 };
 

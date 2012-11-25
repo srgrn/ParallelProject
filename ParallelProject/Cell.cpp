@@ -25,16 +25,23 @@ bool Cell::isEmpty()
 	return false;
 }
 
-bool Cell::occupy(Plane* ptr)
+bool Cell::occupy(int id)
 {
-	return (contents.insert(pair<int,Plane*>(ptr->flightNumber,ptr))).second; // which in this case will only return false if the plane is already in the map
+	return (contents.insert(pair<int,bool>(id,true))).second; // which in this case will only return false if the plane is already in the map
 
 }
 
-bool Cell::leave(Plane* ptr)
+bool Cell::leave(int id)
 {
-	int ret = contents.erase(ptr->flightNumber);
+	int ret = contents.erase(id);
 	if(ret ==0)
 		return false;
 	return true;
+}
+
+bool Cell::inCell(PointXY point)
+{
+	if(point>=TopLeft && point<=(TopLeft+100))
+		return true;
+	return false;
 }

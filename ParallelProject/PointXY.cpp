@@ -24,7 +24,39 @@ PointXY PointXY::operator+( const double& other ) const
 {
 	return PointXY(x+other,y+other);
 }
+PointXY PointXY::operator*( const double& other ) const
+{
+	return PointXY(x*other,y*other);
+}
 
+bool PointXY::operator>=(const PointXY& other ) const
+{
+	if(x>=other.x && y>=other.y)
+		return true;
+	return false;
+}
+bool PointXY::operator<=(const PointXY& other ) const
+{
+	if(x<=other.x && y<=other.y)
+		return true;
+	return false;
+}
+bool PointXY::operator>(const PointXY& other ) const
+{
+	double first = x*x+y*y;
+	double second = other.x*other.x+other.y*other.y;
+	if(first > second)
+		return true;
+	return false;
+}
+bool PointXY::operator<(const PointXY& other ) const
+{
+	double first = x*x+y*y;
+	double second = other.x*other.x+other.y*other.y;
+	if(first < second)
+		return true;
+	return false;
+}
 bool PointXY::isZero()
 {
 	if(x ==0 && y ==0)

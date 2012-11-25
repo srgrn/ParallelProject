@@ -84,6 +84,7 @@
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="PointXY.cpp" />
     <ClCompile Include="ProjectSpace.cpp" />
+    <ClCompile Include="ViewPath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cell.h" />
@@ -91,6 +92,7 @@
     <ClInclude Include="Plane.h" />
     <ClInclude Include="PointXY.h" />
     <ClInclude Include="ProjectSpace.h" />
+    <ClInclude Include="ViewPath.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

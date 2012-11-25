@@ -3,6 +3,11 @@
 
 Plane::Plane(void)
 {
+	direction.x =0;
+	direction.y =0;
+	currentCell = NULL;
+	location.x = -1;
+	location.y = -1;
 }
 
 Plane::Plane(istream& is)
@@ -23,6 +28,11 @@ Plane::Plane(istream& is)
 		ControlPoint temp(x,y,str);
 		controlpoints.push_back(temp); // enter new checkpoint into plane
 	}
+	direction.x =0;
+	direction.y =0;
+	currentCell = NULL;
+	location.x = -1;
+	location.y = -1;
 }
 
 Plane::~Plane(void)
@@ -44,31 +54,40 @@ PointXY Plane::calculateDirectionVector()
 	return p;
 }
 
-void Plane::updateLocation(int interval)
+void Plane::updateLocation(int interval,ProjectSpace *space)
 {
 	location.timeInSeconds += interval;
 	location.x += direction.x*interval;
 	location.y += direction.y*interval;
+	// the main idea is that a plane can only be in one cell at a time
+	if(currentCell == NULL)
+		currentCell = space->insertCell(location);
+	else if(!currentCell->inCell(location)) // the plane is in the same cell he was before
+	{
+		currentCell->leave(flightNumber);
+		currentCell = space->insertCell(location);
+		currentCell->occupy(flightNumber);
+	}
 }
 
-void Plane::step(int time, int interval)
+void Plane::step(int time, int interval,ProjectSpace *space)
 {
 	if(controlpoints.size() > 0)
 	{
 		vector<ControlPoint>::iterator cpi = controlpoints.begin();
 		if(cpi->timeInSeconds == time) // if started on a control point 
 		{
-
 			location = *(cpi);
 			vector<ControlPoint>::iterator afterErase = controlpoints.erase(cpi);
 			if(afterErase != controlpoints.end()) // if no more points for this plane
 			{
-				//cout << flightNumber << " starts at " << time << endl;
+				cout << flightNumber << " starts at " << time << endl;
 				direction = calculateDirectionVector();
+				updateLocation(0,space); // to make sure the plane sets the cell in the first place
 			}
 			else
 			{
-				//cout << flightNumber << " finished at " << time << " ";
+				cout << flightNumber << " finished at " << time << " " <<endl;
 				//cout << time << " " << flightNumber << " " << location.x << "," << location.y << endl;
 				direction.x = 0; // reset direction vector
 				direction.y = 0; // reset direction vector
@@ -80,8 +99,8 @@ void Plane::step(int time, int interval)
 			if(!direction.isZero())
 			{
 
-				updateLocation(interval);
-				//cout << i << " " << iter->flightNumber << " " << iter->location.x << "," << iter->location.y << endl;
+				updateLocation(interval,space);
+				//cout << time << " " << flightNumber << " " << location.x << "," << location.y << endl;
 			}
 		}
 	}
@@ -94,6 +113,19 @@ bool Plane::isMoving()
 		return false;
 	return true;
 }
+bool Plane::isMoving(int time)
+{
+	if(isMoving()) // this is used to shorten the call since if the plane is already moving no need to check further
+		return true;
+	if(controlpoints.size()==0)
+		return false;
+	int liftoff = controlpoints.front().timeInSeconds;
+	int touchdown = controlpoints.back().timeInSeconds;
+	if(liftoff <= time && touchdown >= time) //the plane is on a leg
+		return true;
+	return false;
+}
+
 
 // Operators
 bool Plane::operator>(const Plane& other) const
