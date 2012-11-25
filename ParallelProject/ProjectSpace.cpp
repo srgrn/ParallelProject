@@ -37,12 +37,13 @@ vector<Cell*> ProjectSpace::betweenTwoPoints(PointXY a, PointXY b)
 }
 void ProjectSpace::betweenTwoPoints(Cell* begin,Cell* end,vector<Cell*>* ret)
 {
-	int a[5] ={0};
-	
-	//test.push_back(begin);
+	ret->push_back(begin);
 	//Cell t = matrix[(int)(a.x/cells_h)][(int)(a.y/cells_v)];
-	Cell start(begin->TopLeft.x,begin->TopLeft.y,begin->width,begin->height);
-	
+	Cell start;
+	//Cell start(begin->TopLeft.x,begin->TopLeft.y,begin->width,begin->height);
+	start.TopLeft = begin->TopLeft;
+	start.width = begin->width; 
+	start.height = begin->height;
 	if(begin == end)
 		return;
 	double xdiff = start.center().x- end->center().x;

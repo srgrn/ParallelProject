@@ -41,7 +41,33 @@ void main(int argc, char* argv[]) {
 		int num_of_planes = moving.size();
 		int pairs_number = (num_of_planes*(num_of_planes-1))/2;
 		pair<Plane*,Plane*> *arr = new pair<Plane*,Plane*>[pairs_number]; // the number of pairs should be n!/k!(n-k)! or in his case (n-1)*n/2
-		setPairs(&moving,arr);
+		if(num_of_planes > 0)
+		{
+		setPairs(&moving,arr); // this function cause the heap corruptions
+		}
+		//if(num_of_planes > 0)
+		//{
+		//	cout << "yeah";
+		//	// test heap corruption
+		//	Cell* a = new Cell(0,0,100,100); 
+		//	Cell* b = a;
+		//	pair<PointXY,PointXY> key;
+		//	if(a->TopLeft >= b->TopLeft)
+		//	{
+		//		key.first = a->TopLeft;
+		//		key.second = b->TopLeft;
+		//	}
+		//	else
+		//	{
+		//		key.first = b->TopLeft;
+		//		key.second = a->TopLeft;
+		//	} 
+	
+		//	ViewPath curr(a,b);
+		//	space.betweenTwoPoints(a,b,&(curr.cells));
+		//	map<pair<PointXY,PointXY>,ViewPath*>::iterator index =paths.insert(pair<pair<PointXY,PointXY>,ViewPath*>(key,&curr)).first;
+		//	// end of test 
+		//}
 		for(int j=0;j<num_of_planes;j++)
 		{
 			Cell* a = arr[j].first->currentCell;
@@ -60,14 +86,16 @@ void main(int argc, char* argv[]) {
 			map<pair<PointXY,PointXY>,ViewPath*>::iterator index = paths.find(key);
 			if(index == paths.end())
 			{
-				ViewPath curr(a,b);
+				//TODO need to find a way to prevent it from disappering..
 				space.betweenTwoPoints(a,b,&(curr.cells));
-				index = paths.insert(pair<pair<PointXY,PointXY>,ViewPath*>(key,&curr)).first;
+				// Currently it disappears when inserting into the map
+				paths.insert(pair<pair<PointXY,PointXY>,ViewPath*>(key,&curr));
+				
 			}
-			vector<Cell*>* ptr = &(index->second->cells);
-			for(vector<Cell*>::iterator testerIT = ptr->begin();testerIT<ptr->end();testerIT++)
+			ViewPath* ptr = paths.at(key); // this adds a lot of O into the code 
+			for(vector<Cell*>::iterator testerIT = ptr->cells.begin();testerIT<ptr->cells.end();testerIT++)
 			{
-				if((*testerIT)->contents.size() >0)
+				if((*testerIT)->contents >0)
 				{
 					arr[j].first->CL++;
 					//arr[j].first->CDObjects.insert
@@ -86,12 +114,13 @@ void setPairs(vector<Plane*>* vec,pair<Plane*,Plane*> *arr)
 {
 	vector<Plane*>::iterator front = vec->begin();
 	int counter =0;
-	for(;front<vec->end();front++)
+	for(;front!=vec->end();front++)
 	{
-		for(vector<Plane*>::iterator rotate = front;rotate<vec->end();rotate++,counter++)
+		for(vector<Plane*>::iterator rotate = front+1;rotate!=vec->end();rotate++)
 		{
 			arr[counter].first = (*front);
 			arr[counter].second = (*rotate);
+			counter++;
 		}
 	}
 }

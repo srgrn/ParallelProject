@@ -1,6 +1,8 @@
 #include "Cell.h"
 
-
+Cell::Cell(void)
+{
+}
 Cell::Cell(int x,int y,int xsize,int ysize)
 {
 	TopLeft.x = x;
@@ -20,22 +22,26 @@ PointXY Cell::center()
 }
 bool Cell::isEmpty()
 {
-	if(contents.size() == 0)
+	//if(contents.size() == 0)
+	if(contents ==0)
 		return true;
 	return false;
 }
 
 bool Cell::occupy(int id)
 {
-	return (contents.insert(pair<int,bool>(id,true))).second; // which in this case will only return false if the plane is already in the map
+	contents++;
+	//return (contents.insert(pair<int,bool>(id,true))).second; // which in this case will only return false if the plane is already in the map
+	return true;
 
 }
 
 bool Cell::leave(int id)
 {
-	int ret = contents.erase(id);
-	if(ret ==0)
-		return false;
+	contents--;
+	//int ret = contents.erase(id);
+	//if(ret ==0)
+		//return false;
 	return true;
 }
 
