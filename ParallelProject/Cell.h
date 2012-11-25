@@ -16,7 +16,8 @@ public:
 	int height;
 	PointXY center();
 	//map<int,bool> contents; 
-	int contents;
+	//int contents;
+	map<int,bool> contents;
 	bool isEmpty();
 	bool occupy(int id);
 	bool leave(int id);

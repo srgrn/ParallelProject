@@ -111,20 +111,35 @@ void main(int argc, char* argv[]) {
 				{
 					if(!(*testerIT)->isEmpty())
 					{
+						if((*testerIT) != arr[j].first->currentCell && (*testerIT) != arr[j].second->currentCell)
+						{
 						arr[j].first->CL++;
-						//arr[j].first->CDObjects.insert
+						arr[j].first->CDObjects.insert(pair<int,bool>(arr[j].second->flightNumber,true));
+						arr[j].second->CDObjects.insert(pair<int,bool>(arr[j].first->flightNumber,true));
 						arr[j].second->CL++;
 						break;
+						}
 					}
 				} // end of loop going over cells on path
 		} // end of updating planes CL
 
 	} // end of day look
 	
+	Plane *MaxCL =&planes.front();
 	for(vector<Plane>::iterator iter = planes.begin();iter < planes.end();iter++)
 	{
-		cout << iter->flightNumber << ": " << iter->CL << endl;
+		//cout << iter->flightNumber << ": " << iter->CL << endl;
+		if(MaxCL->CL < iter->CL)
+		{
+			MaxCL = &(*iter);
+		}
 	}
+	cout << "flight with max Critical Degree: " << MaxCL->flightNumber << " CL: " <<MaxCL->CL<<" hidden from ";
+	for(map<int,bool>::iterator it = MaxCL->CDObjects.begin();it!= MaxCL->CDObjects.end();it++)
+	{
+		cout << it->first << " ";
+	}
+	cout << endl;
 }
 
 

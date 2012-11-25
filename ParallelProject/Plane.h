@@ -30,7 +30,7 @@ public:
 	Cell *currentCell;
 	int CL; // critical level
 	int CD; // critical degree
-	map<int,int> CDObjects; //critical degree objects
+	map<int,bool> CDObjects; //critical degree objects
 	// operators
 	bool Plane::operator>(const Plane& other) const;
 	bool Plane::operator<(const Plane& other) const;

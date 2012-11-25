@@ -84,13 +84,13 @@ void Plane::step(int time, int interval,ProjectSpace *space)
 			vector<ControlPoint>::iterator afterErase = controlpoints.erase(cpi);
 			if(afterErase != controlpoints.end()) // if no more points for this plane
 			{
-				cout << flightNumber << " starts at " << time << endl;
+				//cout << flightNumber << " starts at " << time << endl;
 				direction = calculateDirectionVector();
 				updateLocation(0,space); // to make sure the plane sets the cell in the first place
 			}
 			else
 			{
-				cout << flightNumber << " finished at " << time << " " <<endl;
+				//cout << flightNumber << " finished at " << time << " " <<endl;
 				//cout << time << " " << flightNumber << " " << location.x << "," << location.y << endl;
 				direction.x = 0; // reset direction vector
 				direction.y = 0; // reset direction vector
