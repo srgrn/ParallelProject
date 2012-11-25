@@ -17,5 +17,6 @@ ControlPoint::~ControlPoint(void)
 
 int ControlPoint::timeToInt(int hour,int min,int sec)
 {
+	// using simple math (each hour has 3600 seconds and each minute 60 seconds
 	return (hour*3600 + min*60 + sec);
 }

@@ -41,6 +41,7 @@ bool PointXY::operator<=(const PointXY& other ) const
 		return true;
 	return false;
 }
+// if the points are a,b and c,d decide who is bigger using the distance from 0,0
 bool PointXY::operator>(const PointXY& other ) const
 {
 	double first = x*x+y*y;
@@ -57,6 +58,7 @@ bool PointXY::operator<(const PointXY& other ) const
 		return true;
 	return false;
 }
+// verify the point is 0,0
 bool PointXY::isZero()
 {
 	if(x ==0 && y ==0)

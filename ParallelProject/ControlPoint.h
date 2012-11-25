@@ -1,3 +1,6 @@
+/******************************************
+ * Class for hodling a point with a timestamp object
+ ******************************************/
 #pragma once
 #include "pointxy.h"
 #include <string>
@@ -10,6 +13,6 @@ public:
 	ControlPoint(double x,double y,char* strtime);
 	~ControlPoint(void);
 	int timeInSeconds; // in order to make it easier i will define time as seconds from midnight
-	int timeToInt(int hour,int min,int sec);
+	int timeToInt(int hour,int min,int sec); // convert time string (hh:mm:ss) to seconds from midnight
 };
 

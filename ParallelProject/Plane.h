@@ -1,3 +1,7 @@
+/******************************************
+ * Class for hodling a plane object
+ ******************************************/
+
 #pragma once
 #include "ControlPoint.h"
 #include "PointXY.h" // since controlPoint is a kind of PointXY this is not actually needed
@@ -14,7 +18,7 @@ class Plane
 {
 public:
 	Plane(void);
-	Plane(istream& is);
+	Plane(istream& is); // get plane from data file
 	~Plane(void);
 	
 	PointXY calculateDirectionVector();
@@ -28,8 +32,7 @@ public:
 	PointXY direction;
 	vector<ControlPoint> controlpoints;
 	Cell *currentCell;
-	int CL; // critical level
-	int CD; // critical degree
+	int CD; // critical Degree
 	map<int,bool> CDObjects; //critical degree objects
 	// operators
 	bool Plane::operator>(const Plane& other) const;

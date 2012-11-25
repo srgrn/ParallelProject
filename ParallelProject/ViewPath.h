@@ -1,3 +1,6 @@
+/******************************************
+ * Class for holding a path object
+ ******************************************/
 #pragma once
 #include "Cell.h"
 #include <vector>
@@ -10,8 +13,8 @@ public:
 	ViewPath(Cell* a,Cell* b);
 	~ViewPath(void);
 
-	vector<Cell*> cells;
-	Cell* start;
-	Cell* end;
+	vector<Cell*> cells; // pointers to all the cells on the Project space between the two points
+	Cell* start; // first point on line
+	Cell* end; // last point on line
 };
 
