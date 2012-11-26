@@ -23,7 +23,8 @@ public:
 	
 	PointXY calculateDirectionVector();
 	void updateLocation(int interval,ProjectSpace *space);
-	void step(int time, int interval,ProjectSpace *space);
+	void Plane::step(int time, ProjectSpace *space);
+	void step(int time, int interval,ProjectSpace *space); // DEPRECATED
 	bool isMoving();
 	bool isMoving(int time);
 

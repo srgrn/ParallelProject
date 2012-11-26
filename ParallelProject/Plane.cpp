@@ -72,6 +72,49 @@ void Plane::updateLocation(int interval,ProjectSpace *space)
 	}
 }
 
+void Plane::step(int time, ProjectSpace *space)
+{
+	if(controlpoints.size() == 0)
+		return;
+	vector<ControlPoint>::iterator cpi = controlpoints.end();
+	for(vector<ControlPoint>::iterator cpi_loop = controlpoints.begin();cpi_loop != controlpoints.end(); cpi_loop++)
+	{
+		if(time >= cpi_loop->timeInSeconds)
+		{
+			location = *(cpi_loop);
+			cpi = cpi_loop;
+		}
+	}
+	int timediff = time - location.timeInSeconds;
+	if(cpi != controlpoints.end())
+	{
+		vector<ControlPoint>::iterator afterErase = controlpoints.erase(controlpoints.begin(),cpi+1); //doesn't include the one pointed by last
+		if(afterErase != controlpoints.end()) // if no more points for this plane
+			{
+				//cout << flightNumber << " starts at " << time << endl;
+				direction = calculateDirectionVector();
+				updateLocation(timediff,space); // to make sure the plane sets the cell in the first place
+			}
+			else
+			{
+				//cout << flightNumber << " finished at " << time << " " <<endl;
+				//cout << time << " " << flightNumber << " " << location.x << "," << location.y << endl;
+				direction.x = 0; // reset direction vector
+				direction.y = 0; // reset direction vector
+			}
+	}
+	else
+	{
+		if(controlpoints.size() == 0)
+			return;
+		if(!direction.isZero())
+			{
+				updateLocation(timediff,space);
+				//cout << time << " " << flightNumber << " " << location.x << "," << location.y << endl;
+			}
+	}
+}
+
 void Plane::step(int time, int interval,ProjectSpace *space)
 {
 	if(controlpoints.size() > 0)
