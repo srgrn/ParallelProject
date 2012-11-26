@@ -10,7 +10,10 @@ Plane::Plane(void)
 	location.y = -1;
 	CD = 0;
 }
-
+Plane::Plane(int name,int )
+{
+	
+}
 Plane::Plane(istream& is)
 {
 	char str[100];
