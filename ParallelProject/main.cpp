@@ -44,7 +44,7 @@ void main(int argc, char* argv[]) {
 
 		// create the ProjectSpace from file and load the planes
 		fstream stream;
-		string str = "C:\\data\\data3.txt";
+		string str = "C:\\data\\data2.txt";
 		//stream.open(argv[1],ios::in);
 		stream.open(str,ios::in);
 		ProjectSpace space(stream); // read the header of the file # note there are no exception handling.
@@ -74,7 +74,7 @@ void main(int argc, char* argv[]) {
 		int recvBufferSize = 0;
 		MPI_Recv(&recvBufferSize,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status); 
 		
-		if(status.MPI_TAG != TAG_REQWORK)// request for time share
+		if(status.MPI_TAG != TAG_REQWORK)// having some update
 			{
 				int source = status.MPI_SOURCE;
 				MPI_Recv(&recvBufferSize,1,MPI_INT,source,TAG_UPDATE,MPI_COMM_WORLD,&status); // get amount of updates
@@ -89,7 +89,7 @@ void main(int argc, char* argv[]) {
 				}
 				//cout << finished<<" master finished updated data from "  << source<<endl;
 			}
-			else
+			else //request for time share
 			{
 				if(times[1] < DAYINSECONDS)
 				{
@@ -97,14 +97,14 @@ void main(int argc, char* argv[]) {
 				MPI_Send(times,2,MPI_INT,status.MPI_SOURCE,TAG_MOREWORK,MPI_COMM_WORLD); // send start and end time
 				times[0]+=timeshare;
 				}
-				else
+				else // no more time in the day sending quit tag
 				{
 					MPI_Send(&recvBufferSize,1,MPI_INT,status.MPI_SOURCE,TAG_ENDWORK,MPI_COMM_WORLD);
 					finished++;
 				}
 			}
 		}
-		Plane *MaxCL =&planes.begin()->second;
+		Plane *MaxCL =&planes.begin()->second; //take the first plane as first
 		for(map<int,Plane>::iterator iter = planes.begin();iter != planes.end();iter++)
 		{
 			if(MaxCL->CD < iter->second.CD)
