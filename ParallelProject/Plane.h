@@ -19,6 +19,7 @@ class Plane
 public:
 	Plane(void);
 	Plane(istream& is); // get plane from data file
+	Plane(int* arr);
 	~Plane(void);
 	
 	PointXY calculateDirectionVector();
@@ -27,11 +28,18 @@ public:
 	void step(int time, int interval,ProjectSpace *space); // DEPRECATED
 	bool isMoving();
 	bool isMoving(int time);
+	int* toArray();
+	int* updatePlaneMessage(); // this creates update message of a plane
+	void updatePlane(int *arr); // actually updates the plane based on a message
+	void print();
+	void resetPlane();
+
 
 	int flightNumber;
 	ControlPoint location;
 	PointXY direction;
 	vector<ControlPoint> controlpoints;
+	vector<ControlPoint> past_controlPoints;
 	Cell *currentCell;
 	int CD; // critical Degree
 	map<int,bool> CDObjects; //critical degree objects

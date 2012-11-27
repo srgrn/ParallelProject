@@ -13,6 +13,14 @@ ProjectSpace::ProjectSpace(int xsize,int ysize,int numOfCellsX,int numOfSCellsY,
 	numCellsY = numOfSCellsY; 
 	interval = sec;
 }
+ProjectSpace::ProjectSpace(int* arr) // constructor from arr
+{
+	cell_width = arr[0];
+	cell_height = arr[1];
+	numCellsX = arr[2]; 
+	numCellsY = arr[3]; 
+	interval = arr[4];
+}
 
 ProjectSpace::ProjectSpace(istream& is) // constructur from file
 {
@@ -172,4 +180,20 @@ pair<PointXY,PointXY>* makekey(Cell* a, Cell* b)
 	if(a->TopLeft >= b->TopLeft)
 		return &pair<PointXY,PointXY>(a->TopLeft,b->TopLeft);
 	return &pair<PointXY,PointXY>(b->TopLeft,a->TopLeft);
+}
+
+int* ProjectSpace::toArray()
+{
+	int *ret = (int*)malloc(sizeof(int) *5);
+	ret[0] = cell_width;
+	ret[1] = cell_height;
+	ret[2] = numCellsX;
+	ret[3] = numCellsY;
+	ret[4] = interval;
+	return ret;
+}
+
+void ProjectSpace::print()
+{
+	printf("width = %d, height=%d, num of Cells X = %d, num of Cells Y = %d, interval = %d\n",cell_width,cell_height,numCellsX,numCellsY,interval);
 }

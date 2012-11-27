@@ -3,16 +3,7 @@
 
 Plane::Plane(void)
 {
-	direction.x =0;
-	direction.y =0;
-	currentCell = NULL;
-	location.x = -1;
-	location.y = -1;
-	CD = 0;
-}
-Plane::Plane(int name,int )
-{
-	
+	resetPlane();
 }
 Plane::Plane(istream& is)
 {
@@ -32,12 +23,21 @@ Plane::Plane(istream& is)
 		ControlPoint temp(x,y,str);
 		controlpoints.push_back(temp); // enter new checkpoint into plane
 	}
-	direction.x =0;
-	direction.y =0;
-	currentCell = NULL;
-	location.x = -1;
-	location.y = -1;
-	CD = 0;
+	resetPlane();
+}
+
+Plane::Plane(int* arr)
+{
+	flightNumber = arr[0];
+	int j=0;
+	for(int i=0;i<arr[1];i++)
+	{
+		ControlPoint temp(arr[i+2+j],arr[i+3+j],arr[i+4+j]);
+		controlpoints.push_back(temp);
+		j+=2;
+	}
+	resetPlane();
+
 }
 
 Plane::~Plane(void)
@@ -91,6 +91,7 @@ void Plane::step(int time, ProjectSpace *space)
 	int timediff = time - location.timeInSeconds;
 	if(cpi != controlpoints.end())
 	{
+		past_controlPoints.insert(past_controlPoints.begin(),controlpoints.begin(),cpi);
 		vector<ControlPoint>::iterator afterErase = controlpoints.erase(controlpoints.begin(),cpi+1); //doesn't include the one pointed by last
 		if(afterErase != controlpoints.end()) // if no more points for this plane
 			{
@@ -209,4 +210,70 @@ bool Plane::operator<=(const Plane& other) const
 	if(flightNumber < other.flightNumber || flightNumber== other.flightNumber)
 		return true;
 	return false;
+}
+
+int* Plane::toArray()
+{
+	int* ret = (int*)malloc(sizeof(int) * (2+controlpoints.size()*3));
+	ret[0] = flightNumber;
+	ret[1] = controlpoints.size();
+	int pointsStart=0;
+	for(int i=0;i<ret[1];i++)
+	{
+		int *point = controlpoints.at(i).toArray();
+		ret[i+2+pointsStart] = point[0];
+		ret[i+3+pointsStart] = point[1];
+		ret[i+4+pointsStart] = point[2];
+		pointsStart+=2;
+	}
+	return ret;
+}
+int* Plane::updatePlaneMessage()
+{
+	int* ret = (int*)malloc(sizeof(int) * (3+CDObjects.size()));
+	ret[0] = flightNumber;
+	ret[1] = CD;
+	ret[2] = CDObjects.size();
+	int i=3;
+	for(map<int,bool>::iterator it = CDObjects.begin(); it != CDObjects.end(); it++,i++)
+	{
+		ret[i] = it->first;
+	}
+	return ret;
+}
+void Plane::updatePlane(int* arr) // should get the array from the CD location
+{
+	CD += arr[0];
+	for(int i=2;i<(arr[1]+2);i++)
+	{
+		CDObjects.insert(pair<int,bool>(arr[i],true));
+	}
+}
+void Plane::print()
+{
+	printf("FlightNumber %d; number of points %d\n",flightNumber,controlpoints.size());
+	for(vector<ControlPoint>::iterator it = controlpoints.begin(); it!= controlpoints.end();it++)
+	{
+		it->print();
+	}
+	printf("Degree = %d CDObjects: ",CD);
+	for(map<int,bool>::iterator it = CDObjects.begin(); it != CDObjects.end();it++)
+	{
+		printf(" %d  ",it->first);
+	}
+	printf("\n");
+}
+void Plane::resetPlane()
+{
+	direction.x =0;
+	direction.y =0;
+	currentCell = NULL;
+	location.x = -1;
+	location.y = -1;
+	CD = 0;
+	if(past_controlPoints.size() > 0)
+	{
+		controlpoints.insert(controlpoints.begin(),past_controlPoints.begin(),past_controlPoints.end());
+		past_controlPoints.clear();
+	}
 }

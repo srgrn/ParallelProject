@@ -16,6 +16,7 @@ public:
 	ProjectSpace(void);
 	ProjectSpace(int length,int width,int numOfCellsH,int numOfSCellsV,int interval); // constructor from info (used for testing)
 	ProjectSpace(istream& is); // constructur from file header not safe and without exception handling
+	ProjectSpace(int* arr); // constructor from array
 	~ProjectSpace(void);
 	
 	vector<Cell*> betweenTwoPoints(PointXY a, PointXY b); // get a list of all cells between two points // DEPRECATED
@@ -24,6 +25,8 @@ public:
 	bool checkGridLineY(double m,double n,int x,int start,int end); // check if the line given by y=mx+n cuts Y=a in a specific cell
 	Cell* insertCell(PointXY point); // addes new cell to the board
 	pair<PointXY,PointXY>* makekey(Cell* a, Cell* b); // create pair from two cells // didn't know where to put it
+	int* toArray();
+	void print();
 
 	int cell_width; // width of cells on project space (X)
 	int cell_height; // height of cells on project space (Y)
