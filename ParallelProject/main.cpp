@@ -19,14 +19,14 @@ using namespace std;
 #define TAG_UPDATESIZE 83
 #define TAG_MOREWORK 90
 #define TAG_ENDWORK 99
-
+#define MAGIC_NUMBER 4 //used for cutting time into smaller pieces
 void setPairs(vector<Plane*>* vec,pair<Plane*,Plane*> *arr); // this bit of code is creating pairs of stuff
 int getLower(int newValue,int oldValue);
 void master();
 void slave();
 
 void main(int argc, char* argv[]) { 
-	// simpleset usage of MPICH as possible just like in the homework
+	// simplest usage of MPICH as possible just like in the homework
 	int  namelen, numprocs, id;
 	char processor_name[MPI_MAX_PROCESSOR_NAME];
 
@@ -36,18 +36,15 @@ void main(int argc, char* argv[]) {
 	MPI_Get_processor_name(processor_name,&namelen);
 	MPI_Status status;
 	omp_set_num_threads(NUM_THREADS);		
-
-
-
+	
 	map<pair<PointXY,PointXY> ,ViewPath> paths;
-	int times[2] = {0};
-	//times[1] = times[0] = 14400;
+	int times[2] = {0}; // buffer for times
 	if(id==0)  // load from file on first computer
 	{ 
 
 		// create the ProjectSpace from file and load the planes
 		fstream stream;
-		string str = "C:\\data\\data2.txt";
+		string str = "C:\\data\\data3.txt";
 		//stream.open(argv[1],ios::in);
 		stream.open(str,ios::in);
 		ProjectSpace space(stream); // read the header of the file # note there are no exception handling.
@@ -57,7 +54,7 @@ void main(int argc, char* argv[]) {
 			Plane temp(stream);
 			planes.insert(pair<int,Plane>(temp.flightNumber,temp));
 		}
-		int timeshare = DAYINSECONDS/(numprocs-1);
+		int timeshare = DAYINSECONDS/(numprocs-1)/MAGIC_NUMBER;
 		int* spaceArr = space.toArray();
 		MPI_Bcast(spaceArr,5,MPI_INT,0,MPI_COMM_WORLD); // send board data
 		free(spaceArr);
@@ -71,7 +68,8 @@ void main(int argc, char* argv[]) {
 			MPI_Bcast(plane,sendSize,MPI_INT,0,MPI_COMM_WORLD); // send plane data
 			free(plane);
 		}
-		for(int i =0;i<=(numprocs*2);i++)
+		int finished = 1;
+		while(finished < numprocs)
 		{
 		int recvBufferSize = 0;
 		MPI_Recv(&recvBufferSize,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status); 
@@ -89,7 +87,7 @@ void main(int argc, char* argv[]) {
 					planes.find(arr[0])->second.updatePlane(arr+1); // update relevant plane
 					free(arr);
 				}
-				cout << i<<" master finished updated data from "  << source<<endl;
+				//cout << finished<<" master finished updated data from "  << source<<endl;
 			}
 			else
 			{
@@ -102,6 +100,7 @@ void main(int argc, char* argv[]) {
 				else
 				{
 					MPI_Send(&recvBufferSize,1,MPI_INT,status.MPI_SOURCE,TAG_ENDWORK,MPI_COMM_WORLD);
+					finished++;
 				}
 			}
 		}
@@ -111,7 +110,7 @@ void main(int argc, char* argv[]) {
 			if(MaxCL->CD < iter->second.CD)
 			{
 				MaxCL = &(iter->second);
-				cout << "flight: " << MaxCL->flightNumber << " CD: " <<MaxCL->CD<<endl;
+				//cout << "flight: " << MaxCL->flightNumber << " CD: " <<MaxCL->CD<<endl;
 			}
 		}
 		cout << "flight with max Critical Degree: " << MaxCL->flightNumber << " CD: " <<MaxCL->CD<<" hidden from ";
@@ -255,7 +254,7 @@ void main(int argc, char* argv[]) {
 			MPI_Recv(times,2,MPI_INT,0,MPI_ANY_TAG,MPI_COMM_WORLD,&status);// slave start time and slave end time
 		}//end of slave while more work
 	
-		cout << id << ": done" << endl;
+		//cout << id << ": done" << endl;
 
 	}// end of slave and master if
 	MPI_Finalize();
