@@ -24,8 +24,8 @@ public:
 	bool checkGridLineX(double m,double n,int y,int start,int end); // check if the line given by y=mx+n cuts X=a in a specific cell
 	bool checkGridLineY(double m,double n,int x,int start,int end); // check if the line given by y=mx+n cuts Y=a in a specific cell
 	Cell* insertCell(PointXY point); // addes new cell to the board
-	pair<PointXY,PointXY>* makekey(Cell* a, Cell* b); // create pair from two cells // didn't know where to put it
-	int* toArray();
+	pair<PointXY,PointXY>* makekey(Cell* a, Cell* b); // create pair from two cells // DEPRECATED
+	int* toArray(); // a very basic seralization function
 	void print();
 
 	int cell_width; // width of cells on project space (X)

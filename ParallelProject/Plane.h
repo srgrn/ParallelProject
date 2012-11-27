@@ -23,16 +23,16 @@ public:
 	~Plane(void);
 	
 	PointXY calculateDirectionVector();
-	void updateLocation(int interval,ProjectSpace *space);
-	int Plane::step(int time, ProjectSpace *space);
+	void updateLocation(int interval,ProjectSpace *space); // updating the plane location and current cell
+	int Plane::step(int time, ProjectSpace *space); // moving the plane in space and time according to flight plan
 	void step(int time, int interval,ProjectSpace *space); // DEPRECATED
-	bool isMoving();
-	bool isMoving(int time);
-	int* toArray();
+	bool isMoving(); // simply checkes the direction of the plane
+	bool isMoving(int time); // verify if a plane is moving in a given time
+	int* toArray();// a very basic seralization function
 	int* updatePlaneMessage(); // this creates update message of a plane
 	void updatePlane(int *arr); // actually updates the plane based on a message
 	void print();
-	void resetPlane();
+	void resetPlane(); // resets the plane paramters back to original values at creation
 
 
 	int flightNumber;

@@ -172,8 +172,7 @@ Cell* ProjectSpace::insertCell(PointXY point)
 	return ret; // return new cell pointer
 }
 
-// not sure this is the correct place for it.
-pair<PointXY,PointXY>* makekey(Cell* a, Cell* b)
+pair<PointXY,PointXY>* makekey(Cell* a, Cell* b) //DEPRECATED
 {
 	// the special case of this make key function is the the pair would be in a way an unordererd pair since
 	// the lower point of the two would be the first

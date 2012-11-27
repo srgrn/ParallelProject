@@ -15,7 +15,7 @@ public:
 	~ControlPoint(void);
 	int timeInSeconds; // in order to make it easier i will define time as seconds from midnight
 	int timeToInt(int hour,int min,int sec); // convert time string (hh:mm:ss) to seconds from midnight
-	int* toArray();
+	int* toArray();// a very basic seralization function
 	void print();
 };
 

@@ -282,4 +282,8 @@ void Plane::resetPlane()
 		controlpoints.insert(controlpoints.begin(),past_controlPoints.begin(),past_controlPoints.end());
 		past_controlPoints.clear();
 	}
+	if(CDObjects.size() > 0)
+	{
+		CDObjects.clear();
+	}
 }

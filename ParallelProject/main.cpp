@@ -12,18 +12,18 @@
 using namespace std;
 
 #define DAYINSECONDS 86400
-#define NUM_THREADS 1
+#define NUM_THREADS 4
 #define TAG_REQWORK 70
+#define TAG_ENDWORK 71
+#define TAG_MOREWORK 72
 #define TAG_UPDATE 80
-#define TAG_SENDUPDATE 81
-#define TAG_UPDATESIZE 83
-#define TAG_MOREWORK 90
-#define TAG_ENDWORK 99
+#define TAG_UPDATESIZE 81
+#define TAG_SENDUPDATE 82
+
+
+
 #define MAGIC_NUMBER 4 //used for cutting time into smaller pieces
 void setPairs(vector<Plane*>* vec,pair<Plane*,Plane*> *arr); // this bit of code is creating pairs of stuff
-int getLower(int newValue,int oldValue);
-void master();
-void slave();
 
 void main(int argc, char* argv[]) { 
 	// simplest usage of MPICH as possible just like in the homework
@@ -188,7 +188,7 @@ void main(int argc, char* argv[]) {
 						Cell* a = arr[j].first->currentCell;
 						Cell* b = arr[j].second->currentCell;
 						pair<PointXY,PointXY> key;
-						if(a->TopLeft >= b->TopLeft)
+						if(a->TopLeft >= b->TopLeft) // make sure key always be from the higher point to the lower one
 						{
 							key.first = a->TopLeft;
 							key.second = b->TopLeft;
@@ -198,31 +198,30 @@ void main(int argc, char* argv[]) {
 							key.first = b->TopLeft;
 							key.second = a->TopLeft;
 						} 
-						map<pair<PointXY,PointXY>,ViewPath>::iterator index = paths.find(key);
+						map<pair<PointXY,PointXY>,ViewPath>::iterator index = paths.find(key); // simple optimizaion tries to see if path already exists in memory
 						ViewPath* ViewPtr = NULL;
-						if(index == paths.end())
+						if(index == paths.end()) // path is not in memory
 						{
-
 							vector<Cell*> curr;
-							space.betweenTwoPoints(a,b,&curr);
+							space.betweenTwoPoints(a,b,&curr); // calculate new path
 							ViewPath temp(a,b);
 							if(curr.size() > 0)
 							{
 								temp.cells.assign(curr.begin(),curr.end());
 							}
-							paths.insert(pair<pair<PointXY,PointXY>,ViewPath>(key,temp));
-							ViewPtr = &paths.at(key); // this adds a lot of O into the code 
+							paths.insert(pair<pair<PointXY,PointXY>,ViewPath>(key,temp)); // add to memory
+							ViewPtr = &paths.at(key); // this wastes some time but makes sure that the path is in memory
 						}
 						else
 						{
-							ViewPtr = &(index->second); // this adds a lot of O into the code 
+							ViewPtr = &(index->second); // get the cells from the past calculated path
 						}
-#pragma omp for			
+#pragma omp for			// not sure it actually helps in this case the internet says it will but i'm not sure
 						for(vector<Cell*>::iterator testerIT = ViewPtr->cells.begin();testerIT<ViewPtr->cells.end();testerIT++)
 						{
-							if(!(*testerIT)->isEmpty())
+							if(!(*testerIT)->isEmpty()) // only if cell is not empty
 							{
-								if((*testerIT) != arr[j].first->currentCell && (*testerIT) != arr[j].second->currentCell)
+								if((*testerIT) != arr[j].first->currentCell && (*testerIT) != arr[j].second->currentCell) // to prevent the case where the last cell on path is the cell of the last plane
 								{
 									// plane first cannot see plane second
 									arr[j].first->CD++; //update Critical Degree add 1 level
@@ -238,17 +237,17 @@ void main(int argc, char* argv[]) {
 				//i+=starttime; // stupid optimization to jump i into the next time a planes move if no plane is moving at the moment
 			} // end of day look
 			int count = planes.size();
-			MPI_Ssend(&one,1,MPI_INT,0,TAG_SENDUPDATE,MPI_COMM_WORLD);
+			MPI_Ssend(&one,1,MPI_INT,0,TAG_SENDUPDATE,MPI_COMM_WORLD); // using Ssend to make the slave wait until it starts sending becouse some how when not waiting is puts all messages in the buffer togather if they are small enough.
 			
-			MPI_Ssend(&count,1,MPI_INT,0,TAG_UPDATE,MPI_COMM_WORLD);
-			for(vector<Plane>::iterator it = planes.begin();it != planes.end();it++)
+			MPI_Ssend(&count,1,MPI_INT,0,TAG_UPDATE,MPI_COMM_WORLD);// amount of planes to update
+			for(vector<Plane>::iterator it = planes.begin();it != planes.end();it++)  
 			{
 				int *msg = it->updatePlaneMessage();
-				int bufferSize = 3+msg[2];
+				int bufferSize = 3+msg[2]; // size of the update message (a bit arcane but couldn't think of a better way)
 				MPI_Ssend(&bufferSize,1,MPI_INT,0,TAG_UPDATESIZE,MPI_COMM_WORLD);
-				MPI_Send(msg,bufferSize,MPI_INT,0,TAG_UPDATE,MPI_COMM_WORLD);
+				MPI_Send(msg,bufferSize,MPI_INT,0,TAG_UPDATE,MPI_COMM_WORLD); // send the msg in the buffer
 				free(msg);
-				it->resetPlane();
+				it->resetPlane(); // reset plane to be ready for next time share
 			}
 			MPI_Send(&one,1,MPI_INT,0,TAG_REQWORK,MPI_COMM_WORLD);// request time piece 
 			MPI_Recv(times,2,MPI_INT,0,MPI_ANY_TAG,MPI_COMM_WORLD,&status);// slave start time and slave end time
@@ -260,7 +259,7 @@ void main(int argc, char* argv[]) {
 	MPI_Finalize();
 }
 
-void setPairs(vector<Plane*>* vec,pair<Plane*,Plane*> *arr)
+void setPairs(vector<Plane*>* vec,pair<Plane*,Plane*> *arr) // works on the simple assumption that rotating the second iterator while advancing the first will generate only unique pairs 
 {
 #pragma omp parallel
 	{
@@ -278,18 +277,4 @@ void setPairs(vector<Plane*>* vec,pair<Plane*,Plane*> *arr)
 			}
 		}
 	}
-}
-int getLower(int newValue,int oldValue)
-{
-	if(newValue < oldValue)
-		return newValue;
-	return oldValue;
-}
-void master()
-{
-
-}
-void slave()
-{
-
 }
