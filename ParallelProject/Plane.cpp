@@ -75,22 +75,27 @@ void Plane::updateLocation(int interval,ProjectSpace *space)
 	}
 }
 
-void Plane::step(int time, ProjectSpace *space)
+int Plane::step(int time, ProjectSpace *space)
 {
-	if(controlpoints.size() == 0)
-		return;
+	if(controlpoints.size() == 0 || time >= controlpoints.back().timeInSeconds)
+	{
+		direction.x = -1;
+		direction.y = -1;
+		return 1;
+	}
 	vector<ControlPoint>::iterator cpi = controlpoints.end();
 	for(vector<ControlPoint>::iterator cpi_loop = controlpoints.begin();cpi_loop != controlpoints.end(); cpi_loop++)
 	{
-		if(time >= cpi_loop->timeInSeconds)
+		if(time > cpi_loop->timeInSeconds)
 		{
 			location = *(cpi_loop);
 			cpi = cpi_loop;
 		}
 	}
-	int timediff = time - location.timeInSeconds;
+	int timediff = 0;
 	if(cpi != controlpoints.end())
 	{
+		timediff = time - location.timeInSeconds;
 		past_controlPoints.insert(past_controlPoints.begin(),controlpoints.begin(),cpi);
 		vector<ControlPoint>::iterator afterErase = controlpoints.erase(controlpoints.begin(),cpi+1); //doesn't include the one pointed by last
 		if(afterErase != controlpoints.end()) // if no more points for this plane
@@ -110,13 +115,14 @@ void Plane::step(int time, ProjectSpace *space)
 	else
 	{
 		if(controlpoints.size() == 0)
-			return;
+			return 1;
 		if(!direction.isZero())
 			{
 				updateLocation(timediff,space);
 				//cout << time << " " << flightNumber << " " << location.x << "," << location.y << endl;
 			}
 	}
+	return 0;
 }
 
 void Plane::step(int time, int interval,ProjectSpace *space)
@@ -164,13 +170,13 @@ bool Plane::isMoving()
 }
 bool Plane::isMoving(int time)
 {
-	if(isMoving()) // this is used to shorten the call since if the plane is already moving no need to check further
-		return true;
 	if(controlpoints.size()==0)
 		return false;
 	int liftoff = controlpoints.front().timeInSeconds;
 	int touchdown = controlpoints.back().timeInSeconds;
-	if(liftoff <= time && touchdown >= time) //the plane is on a leg
+	if(liftoff < time && touchdown > time) //the plane is on a leg
+		return true;
+	if(isMoving()) // this is used to shorten the call since if the plane is already moving no need to check further
 		return true;
 	return false;
 }

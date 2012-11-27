@@ -12,9 +12,11 @@
 using namespace std;
 
 #define DAYINSECONDS 86400
-#define NUM_THREADS 4
+#define NUM_THREADS 1
 #define TAG_REQWORK 70
 #define TAG_UPDATE 80
+#define TAG_SENDUPDATE 81
+#define TAG_UPDATESIZE 83
 #define TAG_MOREWORK 90
 #define TAG_ENDWORK 99
 
@@ -24,7 +26,6 @@ void master();
 void slave();
 
 void main(int argc, char* argv[]) { 
-
 	// simpleset usage of MPICH as possible just like in the homework
 	int  namelen, numprocs, id;
 	char processor_name[MPI_MAX_PROCESSOR_NAME];
@@ -40,13 +41,13 @@ void main(int argc, char* argv[]) {
 
 	map<pair<PointXY,PointXY> ,ViewPath> paths;
 	int times[2] = {0};
-
+	//times[1] = times[0] = 14400;
 	if(id==0)  // load from file on first computer
 	{ 
 
 		// create the ProjectSpace from file and load the planes
 		fstream stream;
-		string str = "C:\\data\\data1.txt";
+		string str = "C:\\data\\data2.txt";
 		//stream.open(argv[1],ios::in);
 		stream.open(str,ios::in);
 		ProjectSpace space(stream); // read the header of the file # note there are no exception handling.
@@ -56,7 +57,7 @@ void main(int argc, char* argv[]) {
 			Plane temp(stream);
 			planes.insert(pair<int,Plane>(temp.flightNumber,temp));
 		}
-		int timeshare = DAYINSECONDS/numprocs/4; // the four is arbitrary
+		int timeshare = DAYINSECONDS/(numprocs-1);
 		int* spaceArr = space.toArray();
 		MPI_Bcast(spaceArr,5,MPI_INT,0,MPI_COMM_WORLD); // send board data
 		free(spaceArr);
@@ -70,33 +71,39 @@ void main(int argc, char* argv[]) {
 			MPI_Bcast(plane,sendSize,MPI_INT,0,MPI_COMM_WORLD); // send plane data
 			free(plane);
 		}
-		while(times[1] <=DAYINSECONDS)
+		for(int i =0;i<=(numprocs*2);i++)
 		{
-			int recvBufferSize = 0;
-			MPI_Recv(&recvBufferSize,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status); 
-			if(status.MPI_TAG != TAG_REQWORK)// request for time share
+		int recvBufferSize = 0;
+		MPI_Recv(&recvBufferSize,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status); 
+		
+		if(status.MPI_TAG != TAG_REQWORK)// request for time share
 			{
 				int source = status.MPI_SOURCE;
-				//MPI_Recv(&recvBufferSize,1,MPI_INT,source,TAG_UPDATE,MPI_COMM_WORLD,&status); // get amount of updates
+				MPI_Recv(&recvBufferSize,1,MPI_INT,source,TAG_UPDATE,MPI_COMM_WORLD,&status); // get amount of updates
 				int count = recvBufferSize;
 				for(int i=0;i<count;i++)
 				{
-					MPI_Recv(&recvBufferSize,1,MPI_INT,source,TAG_UPDATE,MPI_COMM_WORLD,&status); 
+					MPI_Recv(&recvBufferSize,1,MPI_INT,source,TAG_UPDATESIZE,MPI_COMM_WORLD,&status); 
 					int *arr = (int*)malloc(sizeof(int)*recvBufferSize); // get single plane update
 					MPI_Recv(arr,recvBufferSize,MPI_INT,source,TAG_UPDATE,MPI_COMM_WORLD,&status);
 					planes.find(arr[0])->second.updatePlane(arr+1); // update relevant plane
 					free(arr);
 				}
+				cout << i<<" master finished updated data from "  << source<<endl;
 			}
-			times[1] +=timeshare; 
-			MPI_Send(times,2,MPI_INT,status.MPI_SOURCE,TAG_MOREWORK,MPI_COMM_WORLD); // send start and end time
-			times[0]+=timeshare;
-		}// end of time share loop
-		for(int i=0;i<numprocs;i++)
-		{
-			int recvBufferSize = 0;
-			MPI_Recv(&recvBufferSize,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status); 
-			MPI_Send(&recvBufferSize,1,MPI_INT,status.MPI_SOURCE,TAG_ENDWORK,MPI_COMM_WORLD);
+			else
+			{
+				if(times[1] < DAYINSECONDS)
+				{
+				times[1] +=timeshare; 
+				MPI_Send(times,2,MPI_INT,status.MPI_SOURCE,TAG_MOREWORK,MPI_COMM_WORLD); // send start and end time
+				times[0]+=timeshare;
+				}
+				else
+				{
+					MPI_Send(&recvBufferSize,1,MPI_INT,status.MPI_SOURCE,TAG_ENDWORK,MPI_COMM_WORLD);
+				}
+			}
 		}
 		Plane *MaxCL =&planes.begin()->second;
 		for(map<int,Plane>::iterator iter = planes.begin();iter != planes.end();iter++)
@@ -104,6 +111,7 @@ void main(int argc, char* argv[]) {
 			if(MaxCL->CD < iter->second.CD)
 			{
 				MaxCL = &(iter->second);
+				cout << "flight: " << MaxCL->flightNumber << " CD: " <<MaxCL->CD<<endl;
 			}
 		}
 		cout << "flight with max Critical Degree: " << MaxCL->flightNumber << " CD: " <<MaxCL->CD<<" hidden from ";
@@ -138,9 +146,9 @@ void main(int argc, char* argv[]) {
 		int one =1;
 		MPI_Send(&one,1,MPI_INT,0,TAG_REQWORK,MPI_COMM_WORLD);// request time piece 
 		MPI_Recv(times,2,MPI_INT,0,MPI_ANY_TAG,MPI_COMM_WORLD,&status);// slave start time and slave end time
-		cout << "the hateful part" <<endl;
 		while(status.MPI_TAG != TAG_ENDWORK)
 		{
+			//cout << id <<": starting times " << times[0] << endl;
 			for(int i=times[0];i<times[1];i++)
 			{
 				vector<Plane*> moving; 
@@ -151,11 +159,16 @@ void main(int argc, char* argv[]) {
 					{
 						if(iter->isMoving(i))
 						{
-							iter->step(i,&space);
-							moving.push_back(&(*iter));
+							int ret = iter->step(i,&space);
+							
+							if(ret == 0)
+							{
+								moving.push_back(&(*iter));
+							}
 						}
 						else 
 						{
+							//cout<< id << ": plane " << iter->flightNumber << "not moving at " << i <<endl;
 							//starttime = getLower(iter->controlpoints[0].timeInSeconds,starttime);
 						}
 					}
@@ -226,22 +239,27 @@ void main(int argc, char* argv[]) {
 				//i+=starttime; // stupid optimization to jump i into the next time a planes move if no plane is moving at the moment
 			} // end of day look
 			int count = planes.size();
-			MPI_Send(&count,1,MPI_INT,0,TAG_UPDATE,MPI_COMM_WORLD);
+			MPI_Ssend(&one,1,MPI_INT,0,TAG_SENDUPDATE,MPI_COMM_WORLD);
+			
+			MPI_Ssend(&count,1,MPI_INT,0,TAG_UPDATE,MPI_COMM_WORLD);
 			for(vector<Plane>::iterator it = planes.begin();it != planes.end();it++)
 			{
 				int *msg = it->updatePlaneMessage();
 				int bufferSize = 3+msg[2];
-				MPI_Send(&bufferSize,1,MPI_INT,0,TAG_UPDATE,MPI_COMM_WORLD);
+				MPI_Ssend(&bufferSize,1,MPI_INT,0,TAG_UPDATESIZE,MPI_COMM_WORLD);
 				MPI_Send(msg,bufferSize,MPI_INT,0,TAG_UPDATE,MPI_COMM_WORLD);
 				free(msg);
 				it->resetPlane();
 			}
+			MPI_Send(&one,1,MPI_INT,0,TAG_REQWORK,MPI_COMM_WORLD);// request time piece 
 			MPI_Recv(times,2,MPI_INT,0,MPI_ANY_TAG,MPI_COMM_WORLD,&status);// slave start time and slave end time
-		}// end of loop for more time for slaves
-	}
+		}//end of slave while more work
+	
+		cout << id << ": done" << endl;
+
+	}// end of slave and master if
 	MPI_Finalize();
 }
-
 
 void setPairs(vector<Plane*>* vec,pair<Plane*,Plane*> *arr)
 {
