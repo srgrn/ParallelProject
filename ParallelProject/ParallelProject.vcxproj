@@ -73,6 +73,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalIncludeDirectories>C:\Program Files (x86)\MPICH2\include;C:\Program Files\MPICH2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -87,6 +88,7 @@
     <ClCompile Include="Cell.cpp" />
     <ClCompile Include="ControlPoint.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ParallelProject.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="PointXY.cpp" />
     <ClCompile Include="ProjectSpace.cpp" />
@@ -95,6 +97,7 @@
   <ItemGroup>
     <ClInclude Include="Cell.h" />
     <ClInclude Include="ControlPoint.h" />
+    <ClInclude Include="ParallelProject.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="PointXY.h" />
     <ClInclude Include="ProjectSpace.h" />
