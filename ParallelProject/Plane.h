@@ -24,6 +24,7 @@ public:
 	
 	PointXY calculateDirectionVector();
 	void updateLocation(int interval,ProjectSpace *space); // updating the plane location and current cell
+	void updateLocation(int interval); // updating the plane location and current cell
 	int Plane::step(int time, ProjectSpace *space); // moving the plane in space and time according to flight plan
 	void step(int time, int interval,ProjectSpace *space); // DEPRECATED
 	bool isMoving(); // simply checkes the direction of the plane

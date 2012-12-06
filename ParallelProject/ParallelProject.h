@@ -41,7 +41,9 @@ public:
 	char processor_name[MPI_MAX_PROCESSOR_NAME];
 	// End of MPI Variables
 	
-	int times[2];
+	//int times[2];
+	int starttime;
+	int endtime;
 	ProjectSpace space;
 
 };

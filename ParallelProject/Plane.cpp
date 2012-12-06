@@ -66,15 +66,29 @@ void Plane::updateLocation(int interval,ProjectSpace *space)
 	location.y += direction.y*interval;
 	// the main idea is that a plane can only be in one cell at a time
 	if(currentCell == NULL)
+	{
+#pragma omp critical
+		{
 		currentCell = space->insertCell(location);
+		currentCell->occupy(flightNumber);
+		}
+	}
 	else if(!currentCell->inCell(location)) // the plane is in the same cell he was before
 	{
+#pragma omp critical
+		{
 		currentCell->leave(flightNumber);
 		currentCell = space->insertCell(location);
 		currentCell->occupy(flightNumber);
+		}
 	}
 }
-
+void Plane::updateLocation(int interval)
+{
+	location.timeInSeconds += interval;
+	location.x += direction.x*interval;
+	location.y += direction.y*interval;
+}
 int Plane::step(int time, ProjectSpace *space)
 {
 	if(controlpoints.size() == 0 || time >= controlpoints.back().timeInSeconds)
@@ -102,7 +116,8 @@ int Plane::step(int time, ProjectSpace *space)
 			{
 				//cout << flightNumber << " starts at " << time << endl;
 				direction = calculateDirectionVector();
-				updateLocation(timediff,space); // to make sure the plane sets the cell in the first place
+				//updateLocation(timediff,space); // to make sure the plane sets the cell in the first place
+				updateLocation(timediff);
 			}
 			else
 			{
@@ -118,7 +133,8 @@ int Plane::step(int time, ProjectSpace *space)
 			return 1;
 		if(!direction.isZero())
 			{
-				updateLocation(timediff,space);
+				updateLocation(timediff);
+				//updateLocation(timediff,space);
 				//cout << time << " " << flightNumber << " " << location.x << "," << location.y << endl;
 			}
 	}
