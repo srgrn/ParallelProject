@@ -206,17 +206,22 @@ void ParallelProject::slave()
 					}
 				}
 			}
+int numOfMoving;
+int pairs_number;
+pair<Plane*,Plane*> *arr;
 #pragma omp single 
 			{
-				int numOfMoving = moving.size();
-				int pairs_number = (numOfMoving*(numOfMoving-1))/2;
-				pair<Plane*,Plane*> *arr = new pair<Plane*,Plane*>[pairs_number]; // the number of pairs should be n!/k!(n-k)! or in his case (n-1)*n/2
+				numOfMoving = moving.size();
+				 pairs_number = (numOfMoving*(numOfMoving-1))/2;
+				arr = new pair<Plane*,Plane*>[pairs_number]; // the number of pairs should be n!/k!(n-k)! or in his case (n-1)*n/2
 				if(numOfMoving > 0)
 				{
 					setPairs(&moving,arr);
 					//starttime=0;
 				}
-				for(int j=0;j<pairs_number;j++)
+			} // end of single thread execution
+			#pragma omp parallel for
+			for(int j=0;j<pairs_number;j++)
 				{
 					Cell* a = arr[j].first->currentCell;
 					Cell* b = arr[j].second->currentCell;
@@ -236,12 +241,14 @@ void ParallelProject::slave()
 					if(index == paths.end()) // path is not in memory
 					{
 						vector<Cell*> curr;
+						#pragma omp critical // this is critical since the insert of cells is critical and can cause locking
 						space.betweenTwoPoints(a,b,&curr); // calculate new path
 						ViewPath temp(a,b);
 						if(curr.size() > 0)
 						{
 							temp.cells.assign(curr.begin(),curr.end());
 						}
+						#pragma omp critical
 						paths.insert(pair<pair<PointXY,PointXY>,ViewPath>(key,temp)); // add to memory
 						ViewPtr = &paths.at(key); // this wastes some time but makes sure that the path is in memory
 					}
@@ -265,7 +272,6 @@ void ParallelProject::slave()
 						}
 					}// end of loop going over cells on path
 				}// end of updating planes CD
-			} // end of single thread execution
 		} // end of day look
 
 		MPI_Ssend(&one,1,MPI_INT,0,TAG_SENDUPDATE,MPI_COMM_WORLD); // using Ssend to make the slave wait until it starts sending becouse some how when not waiting is puts all messages in the buffer togather if they are small enough.
@@ -355,18 +361,22 @@ void ParallelProject::run()
 				}
 			}
 		}
+		int numOfMoving;
+		int pairs_number;
+		pair<Plane*,Plane*> *arr; // the number of pairs should be n!/k!(n-k)! or in his case (n-1)*n/2
 #pragma omp single 
 		{
-			int numOfMoving = moving.size();
-			int pairs_number = (numOfMoving*(numOfMoving-1))/2;
-			pair<Plane*,Plane*> *arr; // the number of pairs should be n!/k!(n-k)! or in his case (n-1)*n/2
+			numOfMoving	 = moving.size();
+			pairs_number= (numOfMoving*(numOfMoving-1))/2;
 			if(numOfMoving > 0)
 			{
 				arr = new pair<Plane*,Plane*>[pairs_number];
 				setPairs(&moving,arr);
 				//starttime=0;
 			}
-			for(int j=0;j<pairs_number;j++)
+		}	// end of single thread execution
+		#pragma omp parallel for	
+		for(int j=0;j<pairs_number;j++)
 			{
 				Cell* a = arr[j].first->currentCell;
 				Cell* b = arr[j].second->currentCell;
@@ -392,6 +402,7 @@ void ParallelProject::run()
 					{
 						temp.cells.assign(curr.begin(),curr.end());
 					}
+#pragma omp critical
 					paths.insert(pair<pair<PointXY,PointXY>,ViewPath>(key,temp)); // add to memory
 					ViewPtr = &paths.at(key); // this wastes some time but makes sure that the path is in memory
 				}
@@ -399,6 +410,7 @@ void ParallelProject::run()
 				{
 					ViewPtr = &(index->second); // get the cells from the past calculated path
 				}
+				
 				for(vector<Cell*>::iterator testerIT = ViewPtr->cells.begin();testerIT<ViewPtr->cells.end();testerIT++)
 				{
 					if(!(*testerIT)->isEmpty()) // only if cell is not empty
@@ -415,7 +427,6 @@ void ParallelProject::run()
 					}
 				}// end of loop going over cells on path
 			}// end of updating planes CD
-		}	// end of single thread execution
 	} // end of day look
 	Plane *MaxCL =&planes.begin()->second; //take the first plane as first
 	for(map<int,Plane>::iterator iter = planes.begin();iter != planes.end();iter++)

@@ -19,7 +19,7 @@ using namespace std;
 #define TAG_UPDATE 80
 #define TAG_UPDATESIZE 81
 #define TAG_SENDUPDATE 82
-#define MAGIC_NUMBER 4 //used for cutting time into smaller pieces
+#define MAGIC_NUMBER 2 //used for cutting time into smaller pieces
 
 class ParallelProject
 {
