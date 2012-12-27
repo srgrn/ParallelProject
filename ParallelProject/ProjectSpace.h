@@ -1,6 +1,6 @@
 /******************************************
- * Class for hodling a Project Space object
- ******************************************/
+* Class for hodling a Project Space object
+******************************************/
 #pragma once
 #include <vector>
 #include <map>
@@ -18,11 +18,11 @@ public:
 	ProjectSpace(istream& is); // constructur from file header not safe and without exception handling
 	ProjectSpace(int* arr); // constructor from array
 	~ProjectSpace(void);
-	
+
 	vector<Cell*> betweenTwoPoints(PointXY a, PointXY b); // get a list of all cells between two points // DEPRECATED
 	void betweenTwoPoints(Cell* begin,Cell* end,vector<Cell*>* ret); // get a list of all cells between two cells
-	bool checkGridLineX(double m,double n,int y,int start,int end); // check if the line given by y=mx+n cuts X=a in a specific cell
-	bool checkGridLineY(double m,double n,int x,int start,int end); // check if the line given by y=mx+n cuts Y=a in a specific cell
+	bool checkGridLineX(double m,double n,double y,double start,double end); // check if the line given by y=mx+n cuts X=a in a specific cell
+	bool checkGridLineY(double m,double n,double x,double start,double end); // check if the line given by y=mx+n cuts Y=a in a specific cell
 	Cell* insertCell(PointXY point); // addes new cell to the board
 	pair<PointXY,PointXY>* makekey(Cell* a, Cell* b); // create pair from two cells // DEPRECATED
 	int* toArray(); // a very basic seralization function

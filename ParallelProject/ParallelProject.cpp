@@ -61,6 +61,14 @@ void ParallelProject::master()
 	map<int,Plane> planes;
 	//stream.open(argv[1],ios::in);
 	stream.open(str,ios::in);
+	if(!stream.is_open())
+	{
+		cout << "No input file quitting" <<endl;
+		int arr[5] = {0};
+		MPI_Bcast(arr,5,MPI_INT,0,MPI_COMM_WORLD); // send board data
+		MPI_Finalize();
+		return;
+	}
 	space = ProjectSpace(stream);
 	while(stream.good()) // read all planes into memory
 	{	 
@@ -83,7 +91,7 @@ void ParallelProject::master()
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 	int finished = 1;
-	cout << numprocs << " " << finished << endl;
+	//cout << numprocs << ">" << finished << endl; // debug print
 	while(finished < numprocs)
 	{
 		int recvBufferSize = 0;
@@ -102,14 +110,13 @@ void ParallelProject::master()
 				planes.find(arr[0])->second.updatePlane(arr+1); // update relevant plane
 				free(arr);
 			}
-			//cout << finished<<" master finished updated data from "  << source<<endl;
 		}
 		else //request for time share
 		{
 			if(times[1] < DAYINSECONDS)
 			{
 				times[1] +=timeshare; 
-				cout << "sending " << times[0] << ","<< times[1] << " to " << status.MPI_SOURCE << endl;
+				// cout << "sending " << times[0] << ","<< times[1] << " to " << status.MPI_SOURCE << endl; // debug comment
 				MPI_Ssend(times,2,MPI_INT,status.MPI_SOURCE,TAG_MOREWORK,MPI_COMM_WORLD); // send start and end time
 				times[0]+=timeshare;
 			}
@@ -126,7 +133,7 @@ void ParallelProject::master()
 		if(MaxCL->CD < iter->second.CD)
 		{
 			MaxCL = &(iter->second);
-			//cout << "flight: " << MaxCL->flightNumber << " CD: " <<MaxCL->CD<<endl;
+			//cout << "flight: " << MaxCL->flightNumber << " CD: " <<MaxCL->CD<<endl; // debug comment
 		}
 	}
 	cout << "flight with max Critical Degree: " << MaxCL->flightNumber << " CD: " <<MaxCL->CD<<" hidden from ";
@@ -148,6 +155,12 @@ void ParallelProject::slave()
 	MPI_Bcast(spaceArr,5,MPI_INT,0,MPI_COMM_WORLD); // get board
 	space = ProjectSpace(spaceArr);
 	free(spaceArr);
+	if(space.cell_height == 0 && space.cell_width == 0)
+	{
+		cout << "proably empty file" <<endl;
+		MPI_Finalize();
+		return;
+	}
 	int numOfPlanes =0;
 	MPI_Bcast(&numOfPlanes,1,MPI_INT,0,MPI_COMM_WORLD); // get number of planes
 	Plane** planesArr = (Plane**)malloc(sizeof(Plane*) * numOfPlanes);
@@ -181,97 +194,95 @@ void ParallelProject::slave()
 					int ret = planesArr[j]->step(i,&space);
 					if(ret == 0)
 					{
-						Cell* ptr = planesArr[j]->currentCell;
-						if(ptr == NULL)
+#pragma omp critical 
 						{
-#pragma omp critical
+
+							Cell* ptr = planesArr[j]->currentCell;
+							if(ptr == NULL)
 							{
 								ptr = space.insertCell(planesArr[j]->location);
 								ptr->occupy(planesArr[j]->flightNumber);
 								planesArr[j]->currentCell = ptr;
+
 							}
-						}
-						else if(!ptr->inCell(planesArr[j]->location)) // the plane is in the same cell he was before
-						{
-#pragma omp critical
+							else if(!ptr->inCell(planesArr[j]->location)) // the plane is in the same cell he was before
 							{
 								ptr->leave(planesArr[j]->flightNumber);
 								ptr = space.insertCell(planesArr[j]->location);
 								ptr->occupy(planesArr[j]->flightNumber);
 								planesArr[j]->currentCell = ptr;
+
 							}
+
+							moving.push_back(planesArr[j]);
 						}
-#pragma omp critical
-						moving.push_back(planesArr[j]);
 					}
 				}
 			}
-int numOfMoving;
-int pairs_number;
-pair<Plane*,Plane*> *arr;
-#pragma omp single 
+			int numOfMoving;
+			int pairs_number;
+			pair<Plane*,Plane*> *arr;
+			numOfMoving = moving.size();
+			pairs_number = (numOfMoving*(numOfMoving-1))/2;
+			arr = new pair<Plane*,Plane*>[pairs_number]; // the number of pairs should be n!/k!(n-k)! or in his case (n-1)*n/2
+			if(numOfMoving > 0)
 			{
-				numOfMoving = moving.size();
-				 pairs_number = (numOfMoving*(numOfMoving-1))/2;
-				arr = new pair<Plane*,Plane*>[pairs_number]; // the number of pairs should be n!/k!(n-k)! or in his case (n-1)*n/2
-				if(numOfMoving > 0)
-				{
-					setPairs(&moving,arr);
-					//starttime=0;
-				}
-			} // end of single thread execution
-			#pragma omp parallel for
+				setPairs(&moving,arr);
+				//starttime=0;
+			}
+
+#pragma omp parallel for
 			for(int j=0;j<pairs_number;j++)
+			{
+				Cell* a = arr[j].first->currentCell;
+				Cell* b = arr[j].second->currentCell;
+				pair<PointXY,PointXY> key;
+				if(a->TopLeft >= b->TopLeft) // make sure key always be from the higher point to the lower one
 				{
-					Cell* a = arr[j].first->currentCell;
-					Cell* b = arr[j].second->currentCell;
-					pair<PointXY,PointXY> key;
-					if(a->TopLeft >= b->TopLeft) // make sure key always be from the higher point to the lower one
+					key.first = a->TopLeft;
+					key.second = b->TopLeft;
+				}
+				else
+				{
+					key.first = b->TopLeft;
+					key.second = a->TopLeft;
+				} 
+				map<pair<PointXY,PointXY>,ViewPath>::iterator index = paths.find(key); // simple optimizaion tries to see if path already exists in memory
+				ViewPath* ViewPtr = NULL;
+				if(index == paths.end()) // path is not in memory
+				{
+					vector<Cell*> curr;
+#pragma omp critical // this is critical since the insert of cells is critical and can cause locking
+					space.betweenTwoPoints(a,b,&curr); // calculate new path
+					ViewPath temp(a,b);
+					if(curr.size() > 0)
 					{
-						key.first = a->TopLeft;
-						key.second = b->TopLeft;
+						temp.cells.assign(curr.begin(),curr.end());
 					}
-					else
+#pragma omp critical
+					paths.insert(pair<pair<PointXY,PointXY>,ViewPath>(key,temp)); // add to memory
+					ViewPtr = &paths.at(key); // this wastes some time but makes sure that the path is in memory
+				}
+				else
+				{
+					ViewPtr = &(index->second); // get the cells from the past calculated path
+				}
+				for(vector<Cell*>::iterator testerIT = ViewPtr->cells.begin();testerIT<ViewPtr->cells.end();testerIT++)
+				{
+					if(!(*testerIT)->isEmpty()) // only if cell is not empty
 					{
-						key.first = b->TopLeft;
-						key.second = a->TopLeft;
-					} 
-					map<pair<PointXY,PointXY>,ViewPath>::iterator index = paths.find(key); // simple optimizaion tries to see if path already exists in memory
-					ViewPath* ViewPtr = NULL;
-					if(index == paths.end()) // path is not in memory
-					{
-						vector<Cell*> curr;
-						#pragma omp critical // this is critical since the insert of cells is critical and can cause locking
-						space.betweenTwoPoints(a,b,&curr); // calculate new path
-						ViewPath temp(a,b);
-						if(curr.size() > 0)
+						if((*testerIT) != arr[j].first->currentCell && (*testerIT) != arr[j].second->currentCell) // to prevent the case where the last cell on path is the cell of the last plane
 						{
-							temp.cells.assign(curr.begin(),curr.end());
+							// plane first cannot see plane second
+							arr[j].first->CD++; //update Critical Degree add 1 level
+							arr[j].first->CDObjects.insert(pair<int,bool>(arr[j].second->flightNumber,true)); // first plane cannot see the second
+							arr[j].second->CDObjects.insert(pair<int,bool>(arr[j].first->flightNumber,true)); // second plane cannot see the first
+							arr[j].second->CD++; //update Critical Degree add 1 level for second plane
+							break;
 						}
-						#pragma omp critical
-						paths.insert(pair<pair<PointXY,PointXY>,ViewPath>(key,temp)); // add to memory
-						ViewPtr = &paths.at(key); // this wastes some time but makes sure that the path is in memory
 					}
-					else
-					{
-						ViewPtr = &(index->second); // get the cells from the past calculated path
-					}
-					for(vector<Cell*>::iterator testerIT = ViewPtr->cells.begin();testerIT<ViewPtr->cells.end();testerIT++)
-					{
-						if(!(*testerIT)->isEmpty()) // only if cell is not empty
-						{
-							if((*testerIT) != arr[j].first->currentCell && (*testerIT) != arr[j].second->currentCell) // to prevent the case where the last cell on path is the cell of the last plane
-							{
-								// plane first cannot see plane second
-								arr[j].first->CD++; //update Critical Degree add 1 level
-								arr[j].first->CDObjects.insert(pair<int,bool>(arr[j].second->flightNumber,true)); // first plane cannot see the second
-								arr[j].second->CDObjects.insert(pair<int,bool>(arr[j].first->flightNumber,true)); // second plane cannot see the first
-								arr[j].second->CD++; //update Critical Degree add 1 level for second plane
-								break;
-							}
-						}
-					}// end of loop going over cells on path
-				}// end of updating planes CD
+				}// end of loop going over cells on path
+			}// end of updating planes CD
 		} // end of day look
 
 		MPI_Ssend(&one,1,MPI_INT,0,TAG_SENDUPDATE,MPI_COMM_WORLD); // using Ssend to make the slave wait until it starts sending becouse some how when not waiting is puts all messages in the buffer togather if they are small enough.
@@ -289,11 +300,12 @@ pair<Plane*,Plane*> *arr;
 		MPI_Send(&one,1,MPI_INT,0,TAG_REQWORK,MPI_COMM_WORLD);// request time piece 
 		MPI_Recv(times,2,MPI_INT,0,MPI_ANY_TAG,MPI_COMM_WORLD,&status);// slave start time and slave end time
 	}//end of slave while more work
-
-	//cout << id << ": done" << endl;
 	MPI_Finalize();
 }
 
+/* this function is the same as the master and slave combined 
+/ it does all the work as a single function and is using openMP like the slave does
+*/
 void ParallelProject::run()
 {
 	fstream stream;
@@ -301,6 +313,11 @@ void ParallelProject::run()
 	map<int,Plane> planes;
 	//stream.open(argv[1],ios::in);
 	stream.open(str,ios::in);
+	if(!stream.is_open())
+	{
+		cout << "No input file quitting" <<endl;
+		return;
+	}
 	space = ProjectSpace(stream);
 	int eplanes =0;
 	while(stream.good()) // read all planes into memory
@@ -321,7 +338,6 @@ void ParallelProject::run()
 	endtime = DAYINSECONDS;
 	starttime = 0;
 	map<pair<PointXY,PointXY> ,ViewPath> paths;
-	//cout << id <<": starting times " << times[0] << endl;
 	for(int i=starttime;i<endtime;i++)
 	{
 		vector<Plane*> moving; 
@@ -336,97 +352,91 @@ void ParallelProject::run()
 
 				if(ret == 0)
 				{
-					Cell* ptr = planesArr[j]->currentCell;
-					if(ptr == NULL)
-					{
 #pragma omp critical
+					{
+						Cell* ptr = planesArr[j]->currentCell;
+						if(ptr == NULL)
 						{
 							ptr = space.insertCell(planesArr[j]->location);
 							ptr->occupy(planesArr[j]->flightNumber);
 							planesArr[j]->currentCell = ptr;
 						}
-					}
-					else if(!ptr->inCell(planesArr[j]->location)) // the plane is in the same cell he was before
-					{
-#pragma omp critical
+						else if(!ptr->inCell(planesArr[j]->location)) // the plane is in the same cell he was before
 						{
 							ptr->leave(planesArr[j]->flightNumber);
 							ptr = space.insertCell(planesArr[j]->location);
 							ptr->occupy(planesArr[j]->flightNumber);
 							planesArr[j]->currentCell = ptr;
 						}
+						moving.push_back(planesArr[j]);
 					}
-#pragma omp critical
-					moving.push_back(planesArr[j]);
 				}
 			}
 		}
 		int numOfMoving;
 		int pairs_number;
 		pair<Plane*,Plane*> *arr; // the number of pairs should be n!/k!(n-k)! or in his case (n-1)*n/2
-#pragma omp single 
+		numOfMoving	 = moving.size();
+		pairs_number= (numOfMoving*(numOfMoving-1))/2;
+		if(numOfMoving > 0)
 		{
-			numOfMoving	 = moving.size();
-			pairs_number= (numOfMoving*(numOfMoving-1))/2;
-			if(numOfMoving > 0)
-			{
-				arr = new pair<Plane*,Plane*>[pairs_number];
-				setPairs(&moving,arr);
-				//starttime=0;
-			}
-		}	// end of single thread execution
-		#pragma omp parallel for	
+			arr = new pair<Plane*,Plane*>[pairs_number];
+			setPairs(&moving,arr);
+			//starttime=0;
+		}
+
+#pragma omp parallel for	
 		for(int j=0;j<pairs_number;j++)
+		{
+			Cell* a = arr[j].first->currentCell;
+			Cell* b = arr[j].second->currentCell;
+			pair<PointXY,PointXY> key;
+			if(a->TopLeft >= b->TopLeft) // make sure key always be from the higher point to the lower one
 			{
-				Cell* a = arr[j].first->currentCell;
-				Cell* b = arr[j].second->currentCell;
-				pair<PointXY,PointXY> key;
-				if(a->TopLeft >= b->TopLeft) // make sure key always be from the higher point to the lower one
+				key.first = a->TopLeft;
+				key.second = b->TopLeft;
+			}
+			else
+			{
+				key.first = b->TopLeft;
+				key.second = a->TopLeft;
+			} 
+			map<pair<PointXY,PointXY>,ViewPath>::iterator index = paths.find(key); // simple optimizaion tries to see if path already exists in memory
+			ViewPath* ViewPtr = NULL;
+			if(index == paths.end()) // path is not in memory
+			{
+				vector<Cell*> curr;
+				space.betweenTwoPoints(a,b,&curr); // calculate new path
+				ViewPath temp(a,b);
+				if(curr.size() > 0)
 				{
-					key.first = a->TopLeft;
-					key.second = b->TopLeft;
+					temp.cells.assign(curr.begin(),curr.end());
 				}
-				else
-				{
-					key.first = b->TopLeft;
-					key.second = a->TopLeft;
-				} 
-				map<pair<PointXY,PointXY>,ViewPath>::iterator index = paths.find(key); // simple optimizaion tries to see if path already exists in memory
-				ViewPath* ViewPtr = NULL;
-				if(index == paths.end()) // path is not in memory
-				{
-					vector<Cell*> curr;
-					space.betweenTwoPoints(a,b,&curr); // calculate new path
-					ViewPath temp(a,b);
-					if(curr.size() > 0)
-					{
-						temp.cells.assign(curr.begin(),curr.end());
-					}
 #pragma omp critical
-					paths.insert(pair<pair<PointXY,PointXY>,ViewPath>(key,temp)); // add to memory
-					ViewPtr = &paths.at(key); // this wastes some time but makes sure that the path is in memory
-				}
-				else
+				paths.insert(pair<pair<PointXY,PointXY>,ViewPath>(key,temp)); // add to memory
+				ViewPtr = &paths.at(key); // this wastes some time but makes sure that the path is in memory
+			}
+			else
+			{
+				ViewPtr = &(index->second); // get the cells from the past calculated path
+			}
+
+			for(vector<Cell*>::iterator testerIT = ViewPtr->cells.begin();testerIT<ViewPtr->cells.end();testerIT++)
+			{
+				if(!(*testerIT)->isEmpty()) // only if cell is not empty
 				{
-					ViewPtr = &(index->second); // get the cells from the past calculated path
-				}
-				
-				for(vector<Cell*>::iterator testerIT = ViewPtr->cells.begin();testerIT<ViewPtr->cells.end();testerIT++)
-				{
-					if(!(*testerIT)->isEmpty()) // only if cell is not empty
+					if((*testerIT) != arr[j].first->currentCell && (*testerIT) != arr[j].second->currentCell) // to prevent the case where the last cell on path is the cell of the last plane
 					{
-						if((*testerIT) != arr[j].first->currentCell && (*testerIT) != arr[j].second->currentCell) // to prevent the case where the last cell on path is the cell of the last plane
-						{
-							// plane first cannot see plane second
-							arr[j].first->CD++; //update Critical Degree add 1 level
-							arr[j].first->CDObjects.insert(pair<int,bool>(arr[j].second->flightNumber,true)); // first plane cannot see the second
-							arr[j].second->CDObjects.insert(pair<int,bool>(arr[j].first->flightNumber,true)); // second plane cannot see the first
-							arr[j].second->CD++; //update Critical Degree add 1 level for second plane
-							break;
-						}
+						// plane first cannot see plane second
+						arr[j].first->CD++; //update Critical Degree add 1 level
+						arr[j].first->CDObjects.insert(pair<int,bool>(arr[j].second->flightNumber,true)); // first plane cannot see the second
+						arr[j].second->CDObjects.insert(pair<int,bool>(arr[j].first->flightNumber,true)); // second plane cannot see the first
+						arr[j].second->CD++; //update Critical Degree add 1 level for second plane
+						break;
 					}
-				}// end of loop going over cells on path
-			}// end of updating planes CD
+				}
+			}// end of loop going over cells on path
+		}// end of updating planes CD
 	} // end of day look
 	Plane *MaxCL =&planes.begin()->second; //take the first plane as first
 	for(map<int,Plane>::iterator iter = planes.begin();iter != planes.end();iter++)

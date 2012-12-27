@@ -60,11 +60,11 @@ void ProjectSpace::betweenTwoPoints(Cell* begin,Cell* end,vector<Cell*>* ret)
 
 	double xdiff = start.center().x- end->center().x; // the diff between the start cell and the end cell on X
 	double ydiff = start.center().y- end->center().y; // the diff between the start cell and the end cell on Y
-	
+
 	// calculating y=mx+n
 	double m = (start.center().y-end->center().y)/(start.center().x-end->center().x);
 	double n = end->center().y-m*end->center().x;// from y=mx+n
-	
+
 	int breakloop = (int)sqrt((double)(numCellsX*numCellsX+numCellsY*numCellsY)) * 2; // the max of cells on route due to a bug in my algorithm (not the best but will be removed later
 	do
 	{
@@ -131,7 +131,7 @@ void ProjectSpace::betweenTwoPoints(Cell* begin,Cell* end,vector<Cell*>* ret)
 	return;
 }
 // simply insert Y value and check resulting X value is in range
-bool ProjectSpace::checkGridLineX(double m,double n,int y,int start,int end)
+bool ProjectSpace::checkGridLineX(double m,double n,double y,double start,double end)
 {
 	double temp = (y-n)/m;
 	if(temp>=start && temp<=end)
@@ -141,7 +141,7 @@ bool ProjectSpace::checkGridLineX(double m,double n,int y,int start,int end)
 	return false;
 }
 // simply insert X value and check resulting Y value is in range
-bool ProjectSpace::checkGridLineY(double m,double n,int x,int start,int end)
+bool ProjectSpace::checkGridLineY(double m,double n,double x,double start,double end)
 {
 	double temp = m*x+n;
 	if(temp>=start && temp<=end)
